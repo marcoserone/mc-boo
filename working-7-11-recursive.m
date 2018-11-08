@@ -115,8 +115,8 @@ Export["zoom-Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"be
 
 
 (* ::Input:: *)
-(*loT=metroReturnAvg[88,5000,1/11,Join[metroReturnAvg[88,4000,1/10,Join[metroReturnAvg[88,3000,1/9,Join[metroReturnAvg[88,2000,1/8,{{3,0},{5,2},{7,4},{9,6}},13],{{11,8}}],13],{{13,10}}],13],{{15,12}}],13];*)
-(*hiT=metroReturnAvg[88,5000,1/10,Join[metroReturnAvg[88,4000,1/9,Join[metroReturnAvg[88,3000,1/8,Join[metroReturnAvg[88,2000,1/7,{{3,0},{5,2},{7,4},{9,6}},13],{{11,8}}],13],{{13,10}}],13],{{15,12}}],13];*)
+(*hiT=metroReturnAvg[88,5000,1/11,Join[metroReturnAvg[88,4000,1/10,Join[metroReturnAvg[88,3000,1/9,Join[metroReturnAvg[88,2000,1/8,{{3,0},{5,2},{7,4},{9,6}},13],{{11,8}}],13],{{13,10}}],13],{{15,12}}],13];*)
+(*loT=metroReturnAvg[88,5000,1/10,Join[metroReturnAvg[88,4000,1/9,Join[metroReturnAvg[88,3000,1/8,Join[metroReturnAvg[88,2000,1/7,{{3,0},{5,2},{7,4},{9,6}},13],{{11,8}}],13],{{13,10}}],13],{{15,12}}],13];*)
 (*Print[loT,hiT]*)
 
 
