@@ -113,11 +113,58 @@ Export["Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<
 Export["zoom-Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[1/10,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".pdf",ListPlot[Table[data[[All,2]][[All,i]]-2i+1,{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{{0,nit},{0,2}},PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
 {Mean[data[[All,2]][[nit-100;;nit,1;;Length[\[CapitalDelta]L]]]],\[CapitalDelta]L[[All,2]]}//Transpose]
 
+checkMetro[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_]:=Block[{itd, DDldata, sigmaz, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, Nz, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+    Nz=Length[\[CapitalDelta]LOriginal]+1;
+  zsample = Sample[Nz,1/100,seed]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+rhovec=Subscript[\[Rho], #]&/@Range[1,Nz-1];
+results=Table[
+indices=Drop[Range[1,Nz],{iDrop}];
+eqs=((QQ0[[All,indices]]//Transpose).rhovec==Idsample[[indices]]);
+rhosol=NSolve[eqs,rhovec];
+rhopos=(rhovec/.rhosol[[1]])/.x_/;x<0->0;
+last=(Abs[QQ0[[All,iDrop]].rhopos-Idsample[[iDrop]]]);check=last<\[Rho]intErrorEstimateFt[1, \[CapitalDelta]L[[-1,1]],zsample[[iDrop]], 1];
+Sow[{check,rhosol,rhopos}],{iDrop,1,Nz}];
+Return[results];
+
+     
+]
+
+
+
+(* ::Code:: *)
+(*check5=checkMetro[1,{{2001/1000,0},{4001/1000,2},{6001/1000,4},{8001/1000,6},{10001/1000,8}},90,12]*)
+
 
 (* ::Input:: *)
-(*loT=metroReturnAvg[88,6000,1/12,Join[metroReturnAvg[88,5000,1/11,Join[metroReturnAvg[88,4000,1/10,Join[metroReturnAvg[88,3000,1/9,Join[metroReturnAvg[88,4000,1/8,{{3,0},{5,2},{7,4},{9,6}},222],{{11,8}}],222],{{13,10}}],222],{{15,12}}],222],{{17,14}}],222];*)
-(*hiT=metroReturnAvg[88,6000,1/13,Join[metroReturnAvg[88,5000,1/12,Join[metroReturnAvg[88,4000,1/11,Join[metroReturnAvg[88,3000,1/10,Join[metroReturnAvg[88,4000,1/9,{{3,0},{5,2},{7,4},{9,6}},222],{{11,8}}],222],{{13,10}}],222],{{15,12}}],222],{{17,14}}],222];*)
-(*Print[loT,hiT]*)
+(*prec=88;*)
+(*seed=123;*)
+(*deltares1=metroReturnAvg[prec,2000,1/8,{{3,0},{5,2},{7,4},{9,6}},seed]*)
+(*check1=checkMetro[1,deltares1,prec,seed]*)
+(*deltares2=metroReturnAvg[prec,3000,1/9,Join[deltares1,{{11,8}}],seed]*)
+(*check2=checkMetro[1,deltares2,prec,seed]*)
+(*deltares3=metroReturnAvg[prec,4000,1/10,Join[deltares2,{{13,10}}],seed]*)
+(*check3=checkMetro[1,deltares3,prec,seed]*)
+(**)
+(*deltares4=metroReturnAvg[prec,5000,1/11,Join[deltares3,{{15,12}}],seed]*)
+(*check4=checkMetro[1,deltares4,prec,seed]*)
+(**)
+(*deltares5=metroReturnAvg[prec,4000,1/12,Join[deltares4,{{17,14}}],seed]*)
+(*check5=checkMetro[1,deltares5,prec,seed]*)
 
 
 
