@@ -150,7 +150,15 @@ Return[{meanrho,sigmarho,finalcheck}];
 
      
 ]
+deltaFree[n_]:= {2#,2#-2}&/@Range[1,n,1];
+opeFree[n_]:=2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
 
+
+(* ::Code:: *)
+(*deltaFree[5]*)
+
+
+opeFree[5]//N
 
 
 (* ::Code:: *)
