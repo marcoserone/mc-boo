@@ -115,7 +115,7 @@ Export["zoom-Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"be
 
 checkMetro[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_]:=Block[{itd, DDldata, sigmaz, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, Nz, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
-    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos}, 
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
 $MaxPrecision=prec;
@@ -132,14 +132,21 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
 rhovec=Subscript[\[Rho], #]&/@Range[1,Nz-1];
-results=Table[
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[Nz-1]],zsample[[i]],1],{i,1,Nz}][[;;,1]];
+results=Reap[Table[
 indices=Drop[Range[1,Nz],{iDrop}];
-eqs=((QQ0[[All,indices]]//Transpose).rhovec==Idsample[[indices]]);
+eqs=(rhovec.QQ0[[All,indices]]==Idsample[[indices]]);
 rhosol=NSolve[eqs,rhovec];
+(*
 rhopos=(rhovec/.rhosol[[1]])/.x_/;x<0->0;
+*)
 last=(Abs[QQ0[[All,iDrop]].rhopos-Idsample[[iDrop]]]);check=last<\[Rho]intErrorEstimateFt[1, \[CapitalDelta]L[[-1,1]],zsample[[iDrop]], 1];
-Sow[{check,rhosol,rhopos}],{iDrop,1,Nz}];
-Return[results];
+Sow[rhovec/.rhosol[[1]]];,{iDrop,1,Nz}]];
+meanrho=results[[2]][[1]]//Mean;
+sigmarho=results[[2]][[1]]//StandardDeviation;
+If[And@@(meanrho+sigmarho>0//Thread),
+finalcheck=Abs[meanrho.QQ0-Idsample]<errSample//Thread,finalcheck=False];
+Return[{meanrho,sigmarho,finalcheck}];
 
      
 ]
@@ -147,7 +154,7 @@ Return[results];
 
 
 (* ::Code:: *)
-(*check5=checkMetro[1,{{2001/1000,0},{4001/1000,2},{6001/1000,4},{8001/1000,6},{10001/1000,8}},90,12]*)
+(*check5=checkMetro[1,{{2000/1000,0},{4,2},{6,4},{8,6},{10,8}},100,1243]*)
 
 
 (* ::Input:: *)
@@ -162,9 +169,6 @@ Return[results];
 (**)
 (*deltares4=metroReturnAvg[prec,5000,1/11,Join[deltares3,{{15,12}}],seed]*)
 (*check4=checkMetro[1,deltares4,prec,seed]*)
-(**)
+(*10*)
 (*deltares5=metroReturnAvg[prec,4000,1/12,Join[deltares4,{{17,14}}],seed]*)
 (*check5=checkMetro[1,deltares5,prec,seed]*)
-
-
-
