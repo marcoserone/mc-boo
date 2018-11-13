@@ -155,10 +155,46 @@ Return[{meanrho,sigmarho,finalcheck,sigmarho/Abs[meanrho]}];
 deltaFree[n_]:= {2#,2#-2}&/@Range[1,n,1];
 opeFree[n_]:=2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
 
+checkMetroReloaded[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_]:=Block[{itd, DDldata, sigmaz, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,1/100,seed]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+results=LeastSquares[QQ0//Transpose,Idsample];
+(*too restrictive to demand positive coefficients
+If[And@@(meanrho+3sigmarho>0//Thread),
+finalcheck=Abs[meanrho.QQ0-Idsample]<errSample//Thread,finalcheck=False];
+*)
+finalcheck=Abs[results.QQ0-Idsample]<errSample//Thread;
+Return[{results,And@@finalcheck}];
+    
+]
+
 
 (* ::Code:: *)
-(*opeFree[10]//N*)
-(*deltaFree[4]*)
+(*opeFree[7]//N*)
+(*checkMetroReloaded[1,deltaFree[7],88,123,100]*)
+(*checkMetroReloaded[1,{{1.985562815166302, 0}, {3.995697898897395, 2}, {5.992370108893179, *)
+(*  4}, {7.979809443325255, 6}, {9.946270272835630, *)
+(*  8}, {11.99120210750944, 10}, {13.99003141538504, *)
+(*  12}, {15.99822720404369, 14}},88,123,100]*)
+(*checkMetroReloaded[1,{{1.985562815166302, 0}, {3.995697898897395, 2}, {5.992370108893179, *)
+(*  4}, {7.979809443325255, 6}, {9.996270272835630, *)
+(*  8}, {11.99120210750944, 10}, {13.99003141538504, *)
+(*  12}, {15.99822720404369, 14}},88,123,1000]*)
 
 
 (* ::Input:: *)
