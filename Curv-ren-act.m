@@ -43,46 +43,74 @@ $MinPrecision=MachinePrecision;
       (*random sample of z around (1/2+I0)*)
            Sample[nz_,var_,seed_] := Module[{imax}, SeedRandom[seed];Table[Abs[RandomVariate[NormalDistribution[0, var]]]+
            1/2+I Abs[RandomVariate[NormalDistribution[0, var]]],{imax,1,nz}]];
-qQGen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]_,L_,zsample_]:=(((1 - zsample)*(1 - Conjugate[zsample]))^\[CapitalDelta]\[Phi]    ConformalBlock[\[CapitalDelta], L , zsample]- ((zsample)*( Conjugate[zsample]))^\[CapitalDelta]\[Phi] ConformalBlock[\[CapitalDelta], L,1- zsample])2^(L);qQGenDims[\[CapitalDelta]\[Phi]_,\[CapitalDelta]L_,z_]:=qQGen[1,#1[[1]],#1[[2]], z]&/@\[CapitalDelta]L
+qQGenRen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]_,L_,zsample_]:=(((1 - zsample)*(1 - Conjugate[zsample]))^\[CapitalDelta]\[Phi]    ConformalBlock[\[CapitalDelta], L , zsample]- ((zsample)*( Conjugate[zsample]))^\[CapitalDelta]\[Phi] ConformalBlock[\[CapitalDelta], L,1- zsample])2^(L);qQGenDimsRen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]L_,z_]:=qQGenRen[1,#1[[1]],#1[[2]], z]&/@\[CapitalDelta]L
 
-smearedActionRen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]L_,dcross_,lmax_,zsample_,Idsample_,errProd_]:=Block[{itd, DDldata, sigmaz,  Actionnew=0,  QQ0, smearedaction,renDet,PP}, 
-
-
-    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
-PP = Join[QQ0, {Idsample}]; 
-renDet=Det[PP]/errProd;
-          Actionnew = renDet^2; 
-    
+smearedActionRen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]L_,dcross_,lmax_,zsample_,Idsample_,errSample_,prec_]:=Block[{itd, DDldata, sigmaz,  Actionnew=0,  QQ0, smearedaction,renDet,PP,TotD}, 
+ QQ0 = qQGenDimsRen[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+     
+    (*Monte Carlo Iteration*)
+$MinPrecision=prec;
+   
+          
     (*Coefficients for LES and action thence*)
-(*Brot noch schmieren?*)
+          PP = Transpose[Join[QQ0, {Idsample}]]/errSample; 
+          Actionnew = Log[1+Det[PP]^2]; 
+
+(*Brot noch schmieren? *)
 smearedaction=Reap[Table[
-           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; renDet=Det[PP]/errProd; 
-          Sow[ renDet^2];
-           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]-dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; renDet=Det[PP]/errProd; 
-          Sow[ renDet^2];,{dimToVary,1,lmax}]];
+           QQ0[[dimToVary]] =qQGenRen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Transpose[Join[QQ0, {Idsample}]]/errSample;
+          Sow[ Log[1+Det[PP]^2]];
+           QQ0[[dimToVary]] =qQGenRen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]-dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Transpose[Join[QQ0, {Idsample}]]/errSample; 
+          Sow[Log[1+Det[PP]^2]];,{dimToVary,1,lmax}]];
 
 Return[  Actionnew+Total[smearedaction[[2]]//Flatten] ];
-    ]
+    ];
+smearedActionRenNoLog[\[CapitalDelta]\[Phi]_,\[CapitalDelta]L_,dcross_,lmax_,zsample_,Idsample_,errSample_,prec_]:=Block[{itd, DDldata, sigmaz,  Actionnew=0,  QQ0, smearedaction,renDet,PP,TotD}, 
+ QQ0 = qQGenDimsRen[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+     
+    (*Monte Carlo Iteration*)
+$MinPrecision=prec;
+   
+          
+    (*Coefficients for LES and action thence*)
+          PP = Transpose[Join[QQ0, {Idsample}]]/errSample; 
+          Actionnew = Det[PP]^2; 
 
-fDimRen[x_,dimToVary_,zsample_,Idsample_,prec_,\[CapitalDelta]L_,nsmear_,errProd_]:=Block[{\[CapitalDelta]Lmod=\[CapitalDelta]L},
+(*Brot noch schmieren? *)
+smearedaction=Reap[Table[
+           QQ0[[dimToVary]] =qQGenRen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Transpose[Join[QQ0, {Idsample}]]/errSample;
+          Sow[Det[PP]^2];
+           QQ0[[dimToVary]] =qQGenRen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]-dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Transpose[Join[QQ0, {Idsample}]]/errSample; 
+          Sow[Det[PP]^2];,{dimToVary,1,lmax}]];
+
+Return[  Actionnew+Total[smearedaction[[2]]//Flatten] ];
+    ];
+
+fDimRen[x_,dimToVary_,zsample_,Idsample_,prec_,\[CapitalDelta]L_,nsmear_,errSample_]:=Block[{\[CapitalDelta]Lmod=\[CapitalDelta]L},
 \[CapitalDelta]Lmod[[dimToVary,1]] = SetPrecision[\[CapitalDelta]Lmod[[dimToVary,1]]+x,prec];
-smearedActionRen[1,\[CapitalDelta]Lmod,1/3,nsmear,zsample,Idsample,errProd]]
+smearedActionRen[1,\[CapitalDelta]Lmod,1/3,nsmear,zsample,Idsample,errSample,prec]]
+
+fDimRenNoLog[x_,dimToVary_,zsample_,Idsample_,prec_,\[CapitalDelta]L_,nsmear_,errSample_]:=Block[{\[CapitalDelta]Lmod=\[CapitalDelta]L},
+\[CapitalDelta]Lmod[[dimToVary,1]] = SetPrecision[\[CapitalDelta]Lmod[[dimToVary,1]]+x,prec];
+smearedActionRenNoLog[1,\[CapitalDelta]Lmod,1/3,nsmear,zsample,Idsample,errSample,prec]]
 
 (*Plotting function*)
-comparisonPLotterRen[halfrange_,step_,n\[CapitalDelta]_,prec_,\[CapitalDelta]LOriginal_,nsmear_]:=Block[{zsample,Idsample,\[CapitalDelta]L=\[CapitalDelta]LOriginal[[1;;n\[CapitalDelta]]],errProd,errSample,pointsYes},
+comparisonPLotterRen[halfrange_,step_,n\[CapitalDelta]_,prec_,\[CapitalDelta]LOriginal_,nsmear_]:=Block[{zsample,Idsample,\[CapitalDelta]L=\[CapitalDelta]LOriginal[[1;;n\[CapitalDelta]]],errProd,errSample,pointsYes,pointsNo},
 SetOptions[RandomVariate,WorkingPrecision->prec];
 $MaxPrecision=prec;
 $MinPrecision=prec;
 zsample = Sample[n\[CapitalDelta]+1,1/100,123]; 
 Idsample =Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^1 -
         ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^1, {zv, 1, n\[CapitalDelta]+1}];
-errSample= \[Rho]intErrorEstimateFt[1,\[CapitalDelta]LOriginal[[n\[CapitalDelta]]],#,1]&/@zsample//Flatten;
-errProd=Times@@errSample;
-pointsYes=Table[fDimRen[#,i,zsample,Idsample,prec,\[CapitalDelta]L,nsmear,errProd]&/@Range[-halfrange,halfrange,step],{i,1,4}];
-Export["curavtures-Ren-nolog-central_Ndelta="<>ToString[n\[CapitalDelta]]<>"nsmear="<>ToString[nsmear]<>"prec="<>ToString[prec]<>".pdf",ListPlot[pointsYes,Joined->True,PlotStyle->Thin,PlotLegends->{2,4,6,8}]];
+errSample= \[Rho]intErrorEstimateFt[1,\[CapitalDelta]LOriginal[[-1,1]],#,1]&/@zsample//Flatten;
+pointsYes=Table[fDimRen[#,i,zsample,Idsample,prec,\[CapitalDelta]L,nsmear,errSample]&/@Range[-halfrange,halfrange,step],{i,1,4}];
+pointsNo=Table[fDimRenNoLog[#,i,zsample,Idsample,prec,\[CapitalDelta]L,nsmear,errSample]&/@Range[-halfrange,halfrange,step],{i,1,4}];
+Export["curavtures-Ren-corrected-central_Ndelta="<>ToString[n\[CapitalDelta]]<>"nsmear="<>ToString[nsmear]<>"prec="<>ToString[prec]<>".pdf",ListPlot[pointsYes,Joined->True,PlotStyle->Thin,PlotLegends->{2,4,6,8},PlotRange->All]];
+Export["curavtures-Ren-corrected-NoLog-central_Ndelta="<>ToString[n\[CapitalDelta]]<>"nsmear="<>ToString[nsmear]<>"prec="<>ToString[prec]<>".pdf",ListPlot[pointsNo,Joined->True,PlotStyle->Thin,PlotLegends->{2,4,6,8},PlotRange->All]];
+
 ]
 
 
 (* ::Input:: *)
 (*\[CapitalDelta]L={{2,0},{4,2},{6,4},{8,6},{10,8},{120/10,10},{140/10,12},{16,14}};*)
-(*Table[comparisonPLotterRen[0.1,0.001,i,60,\[CapitalDelta]L,4],{i,4,8}];*)
+(*Table[comparisonPLotterRen[0.1,0.0005,i,200,\[CapitalDelta]L,4],{i,4,8}];*)
