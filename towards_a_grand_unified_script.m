@@ -104,6 +104,13 @@ $MinPrecision=10;
 $MinPrecision=3;
       Export["Res-fixed_Param_Nit="<>ToString[Ndit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[betad,3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[dcross,3]]<>"seed="<>ToString[seed]<>"id="<>idTag<>".txt", TotD[[2]]];]
 
+weightedLeastSquares[qq0_,id_,w_]:=Block[{rhovec,nu,s},
+rhovec=Inverse[Transpose[qq0].w.qq0].Transpose[qq0] . w.id;
+nu = Dimensions[w][[1]]-Length[rhovec];
+s=(qq0.rhovec-id).w.(qq0.rhovec-id);
+Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1), s/nu}]];
+
+
 
 (* ::Input::Initialization:: *)
 metroReturnAvg[prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_]:=Block[{data},
@@ -183,9 +190,34 @@ Return[{results,And@@finalcheck}];
     
 ]
 
+checkMetroWeighted[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_]:=Block[{itd, DDldata, sigmaz, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,1/100,seed]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+results=weightedLeastSquares[QQ0//Transpose,Idsample,DiagonalMatrix[(errSample)^(-2)]];
+finalcheck=Abs[results[[1]].QQ0-Idsample]<errSample//Thread;
+Return[{results,And@@finalcheck}];
+    
+]
+
 
 (* ::Code:: *)
 (*opeFree[7]//N*)
+(*deltaFree[7]*)
 (*checkMetroReloaded[1,deltaFree[7],88,123,100]*)
 (*checkMetroReloaded[1,{{1.985562815166302, 0}, {3.995697898897395, 2}, {5.992370108893179, *)
 (*  4}, {7.979809443325255, 6}, {9.946270272835630, *)
@@ -197,9 +229,25 @@ Return[{results,And@@finalcheck}];
 (*  12}, {15.99822720404369, 14}},88,123,1000]*)
 
 
+(* ::Code:: *)
+(*opeFree[7]//N*)
+(*checkMetroWeighted[1,deltaFree[7],88,123,100]*)
+(*checkMetroWeighted[1,{{2+1/100,0},{4+1/100,2},{6+1/100,4},{8,6},{10,8},{12,10},{14,12}},88,123,100]*)
+(*checkMetroWeighted[1,{{2+1/100,0},{4+1/100,2},{6+1/100,4},{8,6},{10,8},{12,10},{14,12}},88,123,1000]*)
+
+
+(* ::Code:: *)
+(*nop=20;*)
+(*prec=88;*)
+(*refset=opeFree[nop]//N[#,prec]&;*)
+(*{check5,test}=checkMetroReloaded[1,deltaFree[nop],prec,123,1000];*)
+(*ListPlot[{refset//Abs//Log,check5//Abs//Log},Joined->True]*)
+(*ListPlot[(refset-check5)/refset//Abs//Log,Joined->True]*)
+
+
 (* ::Input:: *)
 (*prec=88;*)
-(*seed=879;*)
+(*multiseedrun=ParallelTable[*)
 (*deltares0={{3,0},{5,2},{7,4}}*)
 (*check0=checkMetro[1,deltares0,prec,seed]*)
 (*deltares1=metroReturnAvg[prec,2000,1/8,Join[deltares0,{{9,6}}],seed]*)
