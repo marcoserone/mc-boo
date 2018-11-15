@@ -104,11 +104,12 @@ $MinPrecision=10;
 $MinPrecision=3;
       Export["Res-fixed_Param_Nit="<>ToString[Ndit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[betad,3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[dcross,3]]<>"seed="<>ToString[seed]<>"id="<>idTag<>".txt", TotD[[2]]];]
 
-weightedLeastSquares[qq0_,id_,w_]:=Block[{rhovec,nu,s},
+weightedLeastSquares[qq0_,id_,w_]:=Block[{rhovec,nu,s,r},
 rhovec=Inverse[Transpose[qq0].w.qq0].Transpose[qq0] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
-s=(qq0.rhovec-id).w.(qq0.rhovec-id);
-Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1), s/nu}]];
+r=(qq0.rhovec-id);
+s=r.w.r;
+Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1),r, s/nu}]];
 
 
 
@@ -208,7 +209,7 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
-results=weightedLeastSquares[QQ0//Transpose,Idsample,DiagonalMatrix[(errSample)^(-2)]];
+results=weightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
 finalcheck=Abs[results[[1]].QQ0-Idsample]<errSample//Thread;
 Return[{results,And@@finalcheck}];
     
@@ -231,9 +232,27 @@ Return[{results,And@@finalcheck}];
 
 (* ::Code:: *)
 (*opeFree[7]//N*)
-(*checkMetroWeighted[1,deltaFree[7],88,123,100]*)
-(*checkMetroWeighted[1,{{2+1/100,0},{4+1/100,2},{6+1/100,4},{8,6},{10,8},{12,10},{14,12}},88,123,100]*)
-(*checkMetroWeighted[1,{{2+1/100,0},{4+1/100,2},{6+1/100,4},{8,6},{10,8},{12,10},{14,12}},88,123,1000]*)
+(*freeResults=checkMetroWeighted[1,deltaFree[7],88,123,100];*)
+(*approxResults100=Table[checkMetroWeighted[1,{{2+i/10000000,0},{4,2},{6,4},{8,6},{10,8},{12,10},{14,12}},88,123,100],{i,-10,10}];*)
+(*approxResults1000=Table[checkMetroWeighted[1,{{2+i/10000000,0},{4,2},{6,4},{8,6},{10,8},{12,10},{14,12}},88,123,1000],{i,-10,10}];*)
+
+
+a=ListPlot[approxResults100[[;;,1,1,1]],Joined->True];
+b=ListPlot[approxResults1000[[;;,1,1,1]],Joined->True,PlotStyle->Red];
+Show[a,b]
+
+
+Histogram[{approxResults100[[1,3]]}]
+Histogram[{approxResults1000[[1,3]]}]
+
+
+approxResults1000[[1,1]]
+freeResults
+
+
+plot100=ListPlot[{approxResults100[[1,1]]}];
+plot1000=ListPlot[{approxResults1000[[1,1]]}];
+Show[plot100,plot100]
 
 
 (* ::Code:: *)
