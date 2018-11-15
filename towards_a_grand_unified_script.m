@@ -242,8 +242,8 @@ b=ListPlot[approxResults1000[[;;,1,1,1]],Joined->True,PlotStyle->Red];
 Show[a,b]
 
 
-Histogram[{approxResults100[[1,3]]}]
-Histogram[{approxResults1000[[1,3]]}]
+Histogram[{approxResults100[[5,1,3]]}]
+Histogram[{approxResults1000[[5,1,3]]}]
 
 
 approxResults1000[[1,1]]
