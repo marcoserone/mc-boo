@@ -109,7 +109,7 @@ rhovec=Inverse[Transpose[qq0].w.qq0].Transpose[qq0] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0.rhovec-id);
 s=r.w.r;
-Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1),r, s/nu}]];
+Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2),r, s/nu}]];
 
 
 
@@ -233,17 +233,32 @@ Return[{results,And@@finalcheck}];
 (* ::Code:: *)
 (*opeFree[7]//N*)
 (*freeResults=checkMetroWeighted[1,deltaFree[7],88,123,100];*)
-(*approxResults100=Table[checkMetroWeighted[1,{{2+i/10000000,0},{4,2},{6,4},{8,6},{10,8},{12,10},{14,12}},88,123,100],{i,-10,10}];*)
-(*approxResults1000=Table[checkMetroWeighted[1,{{2+i/10000000,0},{4,2},{6,4},{8,6},{10,8},{12,10},{14,12}},88,123,1000],{i,-10,10}];*)
+(*approxResults100=Table[checkMetroWeighted[1,{{2+i/10000000,0},{4,2},{6,4},{8,6},{10,8},{12,10},{14,12}},88,123,100],{i,-100,100}];*)
+(*approxResults1000=Table[checkMetroWeighted[1,{{2+i/10000000,0},{4,2},{6,4},{8,6},{10,8},{12,10},{14,12}},88,123,1000],{i,-100,100}];*)
 
 
-a=ListPlot[approxResults100[[;;,1,1,1]],Joined->True];
-b=ListPlot[approxResults1000[[;;,1,1,1]],Joined->True,PlotStyle->Red];
+dims=Table[i/10000000,{i,-100,100}];
+a=ListPlot[Transpose[{dims,approxResults100[[;;,1,1,1]]}],Joined->True,PlotRange->All];
+b=ListPlot[Transpose[{dims,approxResults1000[[;;,1,1,1]]}],Joined->True,PlotStyle->Red,PlotRange->All];
 Show[a,b]
 
 
-Histogram[{approxResults100[[5,1,3]]}]
-Histogram[{approxResults1000[[5,1,3]]}]
+a=ListPlot[Transpose[{dims,approxResults1000[[;;,1,1,1]]+10000000(approxResults100[[;;,1,2,1]])^(1/2)}],Joined->True,PlotRange->All];
+b=ListPlot[Transpose[{dims,approxResults1000[[;;,1,1,1]]-10000000(approxResults100[[;;,1,2,1]])^(1/2)}],Joined->True,PlotStyle->Red,PlotRange->All];
+Show[a,b]
+a=ListPlot[Transpose[{dims,approxResults100[[;;,1,1,1]]+10000000(approxResults100[[;;,1,2,1]])^(1/2)}],Joined->True,PlotRange->All];
+b=ListPlot[Transpose[{dims,approxResults100[[;;,1,1,1]]-10000000(approxResults100[[;;,1,2,1]])^(1/2)}],Joined->True,PlotStyle->Red,PlotRange->All];
+Show[a,b]
+
+
+Histogram[{approxResults100[[1,1,3]]},10]
+Histogram[{approxResults1000[[1,1,3]]},20]
+
+
+dims=Table[i/10000000,{i,-100,100}];
+a=ListPlot[Transpose[{dims,approxResults100[[;;,1,4]]//Log}],Joined->True,PlotRange->All];
+b=ListPlot[Transpose[{dims,approxResults1000[[;;,1,4]]//Log}],Joined->True,PlotStyle->Red,PlotRange->All];
+Show[a,b,PlotRange->All]
 
 
 approxResults1000[[1,1]]
