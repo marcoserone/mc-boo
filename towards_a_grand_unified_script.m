@@ -146,8 +146,8 @@ finalcheck=Abs[results[[1]].QQ0-Idsample]<errSample//Thread;
 Return[{results,And@@finalcheck}];
 ]
 mcIterator[initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seed_,nits_,runid_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results},
-results=Reap[Table[\[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvg[prec,nits[[it]],\[Beta][[it]],\[CapitalDelta]L[[1;;it]],seed,initialOps]][[1]];
-Sow[checkMetroWeighted[1,\[CapitalDelta]L[[1;;it]],prec,seed,nz]]
+results=Reap[Table[\[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvg[prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed,initialOps]][[1]];
+Sow[checkMetroWeighted[1,\[CapitalDelta]L[[1;;it]],prec,seed,nz]];
 ,{it,initialOps,finalOps}]];
 Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>".txt", results];
 ]
@@ -155,11 +155,13 @@ Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOp
 
 
 (* ::Code:: *)
-(**)
 (*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
 (*nvec={3000,2000,2000,2000,2000,2000};*)
 (*\[CapitalDelta]Linitial={#+1,#-2}&/@Range[2,18,2];*)
-(*ParallelTable[mcIterator[4,5,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,"first_test"],{seed,1,10}];*)
+(*Table[mcIterator[4,9,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,"second_test_"],{seed,10,20}];*)
+
+
+
 
 
 mc=ListPlot[dimensions//Transpose];
@@ -196,4 +198,4 @@ Show[mc,ref]
 (**)
 
 
-Reap[Sow[(Sow[x+2])^2]]
+Reap[Sow[(Sow[{x+2,2}][[1]])^2]]
