@@ -44,9 +44,6 @@ $MinPrecision=MachinePrecision;
            Sample[nz_,var_,seed_] := Module[{imax}, SeedRandom[seed];Table[Abs[RandomVariate[NormalDistribution[0, var]]]+
            1/2+I Abs[RandomVariate[NormalDistribution[0, var]]],{imax,1,nz}]]; 
 qQGen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]_,L_,zsample_]:=(((1 - zsample)*(1 - Conjugate[zsample]))^\[CapitalDelta]\[Phi]    ConformalBlock[\[CapitalDelta], L , zsample]- ((zsample)*( Conjugate[zsample]))^\[CapitalDelta]\[Phi] ConformalBlock[\[CapitalDelta], L,1- zsample])2^(L);qQGenDims[\[CapitalDelta]\[Phi]_,\[CapitalDelta]L_,z_]:=qQGen[1,#1[[1]],#1[[2]], z]&/@\[CapitalDelta]L
-
-
-(* ::Input::Initialization:: *)
 MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_]:=Block[{itd, DDldata, sigmaz, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, Nz, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
     IdsampleEx,zOPE,QQOPE,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,smearedaction}, 
@@ -111,17 +108,12 @@ r=(qq0.rhovec-id);
 s=r.w.r;
 Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2),r, s/nu}]];
 
-
-
-(* ::Input::Initialization:: *)
 metroReturnAvg[prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_]:=Block[{data},
 MetroGoFixedSelectiveDir[1,\[CapitalDelta]L,nit,prec,\[Beta],seed,1/10,1/3,Length[\[CapitalDelta]L],ToString[Length[\[CapitalDelta]L]],initialOps];
 data= Get["Res-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[1/10,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".txt"];
 Export["Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[1/10,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".pdf",ListPlot[Table[data[[All,2]][[All,i]],{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
 Export["zoom-Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[1/10,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".pdf",ListPlot[Table[data[[All,2]][[All,i]]-2i+1,{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{{0,nit},{0,2}},PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
 {Mean[data[[All,2]][[nit-100;;nit,1;;Length[\[CapitalDelta]L]]]],StandardDeviation[data[[All,2]][[nit-100;;nit,1;;Length[\[CapitalDelta]L]]]]}]
-
-
 
 checkMetroWeighted[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_]:=Block[{itd, DDldata, sigmaz, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
@@ -149,8 +141,22 @@ mcIterator[initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,see
 results=Reap[Table[\[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvg[prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed,initialOps]][[1]];
 Sow[checkMetroWeighted[1,\[CapitalDelta]L[[1;;it]],prec,seed,nz]];
 ,{it,initialOps,finalOps}]];
-Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>".txt", results];
+Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
 ]
+mcPlotDimsAndOPEs[initialOps_,finalOps_,nz_,prec_,seed_,runid_]:=Block[{data,dims,opes,mcDims,mcOpes,refDims,refOpes,nrecs=(finalOps-initialOps) +1},
+data= Get["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt"];
+dims=data[[1,Range[1,2nrecs -1,2]]];
+opes=data[[1,Range[2,2nrecs ,2]]];
+mcDims=ListPlot[dims[[;;,1,1;;4]]//Transpose,PlotLegends->{"l=0","l=2","l=4","l=6"}];
+refDims=Plot[{2,4,6,8},{x,0,nrecs},PlotStyle->Dashed];
+mcOpes=ListPlot[opes[[;;,1,1,1;;4]]//Transpose,PlotLegends->{"l=0","l=2","l=4","l=6"}];
+refOpes=Plot[{2,1/3},{x,0,nrecs},PlotStyle->Dashed];
+Export["dims-plot"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".pdf",Show[mcDims,refDims],PlotLabel->"Dims_from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]];
+Export["opes-plot"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".pdf",Show[mcOpes,refOpes],PlotLabel->"OPEs_from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]];
+Return[opes[[;;,2]]]
+]
+
+
 
 
 
@@ -158,44 +164,15 @@ Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOp
 (*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
 (*nvec={3000,2000,2000,2000,2000,2000};*)
 (*\[CapitalDelta]Linitial={#+1,#-2}&/@Range[2,18,2];*)
-(*Table[mcIterator[4,9,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,"second_test_"],{seed,10,20}];*)
+(*initial=4*)
+(*final=9*)
+(*Table[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,"anche_OPEs"];mcPlotDimsAndOPEs[initial,final,1000,88,seed,"anche_OPEs"],{seed,66,75}];*)
 
 
-
-
-
-mc=ListPlot[dimensions//Transpose];
-ref=Plot[{2,4,6,8},{x,0,5},PlotStyle->Dashed];
-Show[mc,ref]
-
-
-Needs["ErrorBarPlots`"]
-opes=Transpose/@{check1[[1,{1,2},1;;2]],check2[[1,{1,2},1;;2]],check3[[1,{1,2},1;;2]],check4[[1,{1,2},1;;2]],check5[[1,{1,2},1;;2]]}
-opes[[;;,;;,2]]=4opes[[;;,;;,2]];
-mc=ErrorListPlot[opes//Transpose];
-ref=Plot[{2,1/3},{x,0,5},PlotStyle->Dashed];
-Show[mc,ref]
-
-
-
-
-
-(* ::Input:: *)
-(*prec=88;*)
-(*seed=66;*)
-(*deltares0={{3,0},{5,2},{7,4}}*)
-(*check0=checkMetroWeighted[1,deltares0,prec,seed,1000];*)
-(*deltares1=metroReturnAvg[prec,2000,1/8,Join[deltares0,{{9,6}}],seed];*)
-(*check1=checkMetroWeighted[1,deltares1,prec,seed,1000];*)
-(*deltares2=metroReturnAvg[prec,3000,1/9,Join[deltares1,{{11,8}}],seed];*)
-(*check2=checkMetroWeighted[1,deltares2,prec,seed,1000];*)
-(*deltares3=metroReturnAvg[prec,4000,1/10,Join[deltares2,{{13,10}}],seed];*)
-(*check3=checkMetroWeighted[1,deltares3,prec,seed,1000];*)
-(*deltares4=metroReturnAvg[prec,5000,1/11,Join[deltares3,{{15,12}}],seed];*)
-(*check4=checkMetroWeighted[1,deltares4,prec,seed,1000];*)
-(*deltares5=metroReturnAvg[prec,4000,1/12,Join[deltares4,{{17,14}}],seed];*)
-(*check5=checkMetroWeighted[1,deltares5,prec,seed,1000];*)
-(**)
-
-
-Reap[Sow[(Sow[{x+2,2}][[1]])^2]]
+(* ::Code:: *)
+(*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
+(*nvec={3000,2000,2000,2000,2000,2000};*)
+(*\[CapitalDelta]Linitial={#+1,#-2}&/@Range[2,18,2];*)
+(*initial=4*)
+(*final=9*)
+(*Table[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,"anche_OPEs"];mcPlotDimsAndOPEs[initial,final,1000,88,seed,"anche_OPEs"],{seed,566,585}];*)
