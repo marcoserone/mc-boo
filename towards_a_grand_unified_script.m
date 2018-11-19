@@ -108,8 +108,8 @@ r=(qq0.rhovec-id);
 s=r.w.r;
 Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2),r, s/nu}]];
 
-metroReturnAvg[prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_]:=Block[{data},
-MetroGoFixedSelectiveDir[1,\[CapitalDelta]L,nit,prec,\[Beta],seed,1/10,1/3,Length[\[CapitalDelta]L],ToString[Length[\[CapitalDelta]L]],initialOps];
+metroReturnAvg[prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_]:=Block[{data},
+MetroGoFixedSelectiveDir[1,\[CapitalDelta]L,nit,prec,\[Beta],seed,1/10,1/3,Length[\[CapitalDelta]L],ToString[Length[\[CapitalDelta]L]]<>idtag,initialOps];
 data= Get["Res-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[1/10,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".txt"];
 Export["Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[1/10,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".pdf",ListPlot[Table[data[[All,2]][[All,i]],{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
 Export["zoom-Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[1/10,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".pdf",ListPlot[Table[data[[All,2]][[All,i]]-2i+1,{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{{0,nit},{0,2}},PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
@@ -138,8 +138,8 @@ finalcheck=Abs[results[[1]].QQ0-Idsample]<errSample//Thread;
 Return[{results,And@@finalcheck}];
 ]
 mcIterator[initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seed_,nits_,runid_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results},
-results=Reap[Table[\[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvg[prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed,initialOps]][[1]];
-Sow[checkMetroWeighted[1,\[CapitalDelta]L[[1;;it]],prec,seed,nz]];
+results=Reap[Table[\[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvg[prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed,initialOps,runid]][[1]];
+Sow[checkMetroWeighted[1,\[CapitalDelta]L[[1;;it]],prec,seed,nz,runid]];
 ,{it,initialOps,finalOps}]];
 Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
 ]
@@ -156,28 +156,17 @@ Export["opes-plot"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runi
 Return[opes[[;;,2]]]
 ]
 
-solverTester[initialOps_,finalOps_,nz_,prec_,seed_,runid_]:=Block[{data,dims,opes,mcDims,mcOpes,refDims,refOpes,nrecs=(finalOps-initialOps) +1},
-data= Get["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt"];
-dims=data[[1,Range[1,2nrecs -1,2]]];
-opes=checkMetroWeighted[1,#,prec,seed,nz]&/@dims[[;;,1]];
-mcDims=ListPlot[dims[[;;,1,1;;4]]//Transpose,PlotLegends->{"l=0","l=2","l=4","l=6"},PlotRange->All];
-refDims=Plot[{2,4,6,8},{x,0,nrecs},PlotStyle->Dashed];
-mcOpes=ListPlot[opes[[;;,1,1,1;;4]]//Transpose,PlotLegends->{"l=0","l=2","l=4","l=6"},PlotRange->All];
-refOpes=Plot[{2,1/3},{x,0,nrecs},PlotStyle->Dashed];
-Export["dims-plot"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".pdf",Show[mcDims,refDims],PlotLabel->"Dims_from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]];
-Export["opes-plot"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".pdf",Show[mcOpes,refOpes],PlotLabel->"OPEs_from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]];
-Return[opes[[;;,2]]]
-]
 
 
 
 (* ::Code:: *)
 (*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
+(*initial=4;*)
+(*final=9;*)
 (*nvec={3000,2000,2000,2000,2000,2000};*)
-(*\[CapitalDelta]Linitial={#+1,#-2}&/@Range[2,18,2];*)
-(*initial=4*)
-(*final=9*)
-(*Table[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,"anche_OPEs"];mcPlotDimsAndOPEs[initial,final,1000,88,seed,"anche_OPEs"],{seed,86,95}];*)
+(*Table[*)
+(*\[CapitalDelta]Linitial={#+2i/10,#-2}&/@Range[2,18,2];*)
+(*ParallelTable[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,ToString[i]];mcPlotDimsAndOPEs[initial,final,1000,88,seed,ToString[i]],{seed,555,558}],{i,2,10}];*)
 
 
 (* ::Code:: *)
