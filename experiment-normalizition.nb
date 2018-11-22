@@ -10,10 +10,10 @@
 NotebookFileLineBreakTest
 NotebookFileLineBreakTest
 NotebookDataPosition[       158,          7]
-NotebookDataLength[     78819,       1853]
-NotebookOptionsPosition[     77104,       1817]
-NotebookOutlinePosition[     77438,       1832]
-CellTagsIndexPosition[     77395,       1829]
+NotebookDataLength[     78835,       1854]
+NotebookOptionsPosition[     77121,       1818]
+NotebookOutlinePosition[     77455,       1833]
+CellTagsIndexPosition[     77412,       1830]
 WindowFrame->Normal*)
 
 (* Beginning of Notebook Content *)
@@ -932,7 +932,7 @@ Cell[BoxData[
      ";"}], " ", "\[IndentingNewLine]", 
    RowBox[{
     RowBox[{
-     RowBox[{"qQGen", "[", 
+     RowBox[{"qQGenRen", "[", 
       RowBox[{
       "\[CapitalDelta]\[Phi]_", ",", "\[CapitalDelta]_", ",", "L_", ",", 
        "zsample_"}], "]"}], ":=", 
@@ -967,12 +967,12 @@ Cell[BoxData[
       RowBox[{"2", "^", 
        RowBox[{"(", "L", ")"}]}]}]}], ";", 
     RowBox[{
-     RowBox[{"qQGenDims", "[", 
+     RowBox[{"qQGenDimsRen", "[", 
       RowBox[{"\[CapitalDelta]\[Phi]_", ",", "\[CapitalDelta]L_", ",", "z_"}],
        "]"}], ":=", 
      RowBox[{
       RowBox[{
-       RowBox[{"qQGen", "[", 
+       RowBox[{"qQGenRen", "[", 
         RowBox[{"1", ",", 
          RowBox[{"#1", "[", 
           RowBox[{"[", "1", "]"}], "]"}], ",", 
@@ -997,8 +997,10 @@ Cell[BoxData[
    3.749469804978725*^9, 3.749469812254768*^9}, {3.749469853671838*^9, 
    3.749469858814992*^9}, {3.749536228538103*^9, 3.7495362416007137`*^9}, 
    3.7495364692811117`*^9, {3.749548082278351*^9, 3.749548099131055*^9}, 
-   3.749548430133861*^9, 3.750430348896949*^9},
- CellLabel->"In[1]:=",ExpressionUUID->"f5269d81-9c31-4212-914c-5f6a23ca6d53"],
+   3.749548430133861*^9, 3.750430348896949*^9, {3.751189447332922*^9, 
+   3.751189532852593*^9}, 
+   3.751194946499473*^9},ExpressionUUID->"f5269d81-9c31-4212-914c-\
+5f6a23ca6d53"],
 
 Cell[BoxData[
  RowBox[{
@@ -1047,21 +1049,7 @@ Cell[BoxData[
      RowBox[{"zsample", " ", "=", " ", 
       RowBox[{"Sample", "[", 
        RowBox[{"Nz", ",", 
-        RowBox[{"1", "/", "100"}], ",", "seed"}], "]"}]}], ";", " ", 
-     "\[IndentingNewLine]", 
-     RowBox[{"errSample", "=", " ", 
-      RowBox[{
-       RowBox[{
-        RowBox[{
-         RowBox[{"\[Rho]intErrorEstimateFt", "[", 
-          RowBox[{"\[CapitalDelta]\[Phi]", ",", 
-           RowBox[{"\[CapitalDelta]LOriginal", "[", 
-            RowBox[{"[", 
-             RowBox[{"Nz", "-", "1"}], "]"}], "]"}], ",", "#", ",", "1"}], 
-          "]"}], "&"}], "/@", "zsample"}], "//", "Flatten"}]}], ";", 
-     "\[IndentingNewLine]", 
-     RowBox[{"errProd", "=", 
-      RowBox[{"Times", "@@", "errSample"}]}], ";", "\n", 
+        RowBox[{"1", "/", "100"}], ",", "seed"}], "]"}]}], ";", " ", "\n", 
      RowBox[{"Idsample", " ", "=", " ", 
       RowBox[{"SetPrecision", "[", 
        RowBox[{
@@ -1106,10 +1094,15 @@ Cell[BoxData[
           RowBox[{"All", ",", "1"}], "]"}], "]"}], ",", "prec"}], "]"}]}], 
      ";", "\n", "  ", "\n", "\n", "    ", 
      RowBox[{"QQ0", " ", "=", " ", 
-      RowBox[{"qQGenDims", "[", 
+      RowBox[{"qQGenDimsRen", "[", 
        RowBox[{
-       "\[CapitalDelta]\[Phi]", ",", "\[CapitalDelta]L", ",", "zsample"}], 
-       "]"}]}], ";", "\n", "     ", "\n", "    ", 
+       "\[CapitalDelta]\[Phi]", ",", "\[CapitalDelta]L", ",", "zsample", ",", 
+        
+        RowBox[{"\[CapitalDelta]L", "[", 
+         RowBox[{"[", 
+          RowBox[{
+           RowBox[{"-", "1"}], ",", "1"}], "]"}], "]"}]}], "]"}]}], ";", "\n",
+      "     ", "\n", "    ", 
      RowBox[{"(*", 
       RowBox[{"Monte", " ", "Carlo", " ", "Iteration"}], "*)"}], "\n", 
      RowBox[{"TotD", " ", "=", "   ", 
@@ -1148,7 +1141,7 @@ Cell[BoxData[
           RowBox[{
            RowBox[{"QQ0", "[", 
             RowBox[{"[", "dimToVary", "]"}], "]"}], " ", "=", " ", 
-           RowBox[{"qQGen", "[", 
+           RowBox[{"qQGenRen", "[", 
             RowBox[{"\[CapitalDelta]\[Phi]", ",", 
              RowBox[{
               RowBox[{"\[CapitalDelta]L", "[", 
@@ -1157,7 +1150,11 @@ Cell[BoxData[
              RowBox[{
               RowBox[{"\[CapitalDelta]L", "[", 
                RowBox[{"[", "dimToVary", "]"}], "]"}], "[", 
-              RowBox[{"[", "2", "]"}], "]"}], ",", "zsample"}], "]"}]}], ";", 
+              RowBox[{"[", "2", "]"}], "]"}], ",", "zsample", ",", 
+             RowBox[{"\[CapitalDelta]L", "[", 
+              RowBox[{"[", 
+               RowBox[{
+                RowBox[{"-", "1"}], ",", "1"}], "]"}], "]"}]}], "]"}]}], ";", 
           "\n", "          ", "\n", "    ", 
           RowBox[{"(*", 
            RowBox[{
@@ -1166,17 +1163,14 @@ Cell[BoxData[
           RowBox[{"PP", " ", "=", " ", 
            RowBox[{"Join", "[", 
             RowBox[{"QQ0", ",", " ", 
-             RowBox[{"{", "Idsample", "}"}]}], "]"}]}], ";", " ", 
-          "\[IndentingNewLine]", 
-          RowBox[{"renDet", "=", 
-           RowBox[{
-            RowBox[{"Det", "[", "PP", "]"}], "/", "errProd"}]}], ";", "\n", 
+             RowBox[{"{", "Idsample", "}"}]}], "]"}]}], ";", " ", "\n", 
           "          ", 
           RowBox[{"Actionnew", " ", "=", " ", 
            RowBox[{"Log", "[", 
             RowBox[{"1", "+", 
-             RowBox[{"renDet", "^", "2"}]}], "]"}]}], ";", " ", 
-          "\[IndentingNewLine]", "\[IndentingNewLine]", 
+             RowBox[{
+              RowBox[{"Det", "[", "PP", "]"}], "^", "2"}]}], "]"}]}], ";", 
+          " ", "\[IndentingNewLine]", "\[IndentingNewLine]", 
           RowBox[{"QQsave", "=", "QQ0"}], ";", "\n", 
           RowBox[{"(*", 
            RowBox[{"Brot", " ", "noch", " ", 
@@ -1189,7 +1183,7 @@ Cell[BoxData[
                RowBox[{
                 RowBox[{"QQ0", "[", 
                  RowBox[{"[", "dimToVary", "]"}], "]"}], " ", "=", 
-                RowBox[{"qQGen", "[", 
+                RowBox[{"qQGenRen", "[", 
                  RowBox[{"\[CapitalDelta]\[Phi]", ",", 
                   RowBox[{
                    RowBox[{
@@ -1199,25 +1193,27 @@ Cell[BoxData[
                   RowBox[{
                    RowBox[{"\[CapitalDelta]L", "[", 
                     RowBox[{"[", "dimToVary", "]"}], "]"}], "[", 
-                   RowBox[{"[", "2", "]"}], "]"}], ",", "zsample"}], "]"}]}], 
+                   RowBox[{"[", "2", "]"}], "]"}], ",", "zsample", ",", 
+                  RowBox[{"\[CapitalDelta]L", "[", 
+                   RowBox[{"[", 
+                    RowBox[{
+                    RowBox[{"-", "1"}], ",", "1"}], "]"}], "]"}]}], "]"}]}], 
                ";", "  ", 
                RowBox[{"PP", " ", "=", " ", 
                 RowBox[{"Join", "[", 
                  RowBox[{"QQ0", ",", " ", 
-                  RowBox[{"{", "Idsample", "}"}]}], "]"}]}], ";", 
-               RowBox[{"renDet", "=", 
-                RowBox[{
-                 RowBox[{"Det", "[", "PP", "]"}], "/", "errProd"}]}], ";", 
-               " ", "\n", "          ", 
+                  RowBox[{"{", "Idsample", "}"}]}], "]"}]}], ";", "\n", 
+               "          ", 
                RowBox[{"Sow", "[", " ", 
                 RowBox[{"Log", "[", 
                  RowBox[{"1", "+", 
-                  RowBox[{"renDet", "^", "2"}]}], "]"}], "]"}], ";", 
-               "\[IndentingNewLine]", "           ", 
+                  RowBox[{
+                   RowBox[{"Det", "[", "PP", "]"}], "^", "2"}]}], "]"}], 
+                "]"}], ";", "\[IndentingNewLine]", "           ", 
                RowBox[{
                 RowBox[{"QQ0", "[", 
                  RowBox[{"[", "dimToVary", "]"}], "]"}], " ", "=", 
-                RowBox[{"qQGen", "[", 
+                RowBox[{"qQGenRen", "[", 
                  RowBox[{"\[CapitalDelta]\[Phi]", ",", 
                   RowBox[{
                    RowBox[{
@@ -1227,24 +1223,27 @@ Cell[BoxData[
                   RowBox[{
                    RowBox[{"\[CapitalDelta]L", "[", 
                     RowBox[{"[", "dimToVary", "]"}], "]"}], "[", 
-                   RowBox[{"[", "2", "]"}], "]"}], ",", "zsample"}], "]"}]}], 
+                   RowBox[{"[", "2", "]"}], "]"}], ",", "zsample", ",", 
+                  RowBox[{"\[CapitalDelta]L", "[", 
+                   RowBox[{"[", 
+                    RowBox[{
+                    RowBox[{"-", "1"}], ",", "1"}], "]"}], "]"}]}], "]"}]}], 
                ";", "  ", 
                RowBox[{"PP", " ", "=", " ", 
                 RowBox[{"Join", "[", 
                  RowBox[{"QQ0", ",", " ", 
-                  RowBox[{"{", "Idsample", "}"}]}], "]"}]}], ";", " ", 
-               RowBox[{"renDet", "=", 
-                RowBox[{
-                 RowBox[{"Det", "[", "PP", "]"}], "/", "errProd"}]}], ";", 
-               "\n", "          ", 
+                  RowBox[{"{", "Idsample", "}"}]}], "]"}]}], ";", " ", "\n", 
+               "          ", 
                RowBox[{"Sow", "[", 
                 RowBox[{"Log", "[", 
                  RowBox[{"1", "+", 
-                  RowBox[{"renDet", "^", "2"}]}], "]"}], "]"}], ";", 
+                  RowBox[{
+                   RowBox[{"Det", "[", "PP", "]"}], "^", "2"}]}], "]"}], 
+                "]"}], ";", 
                RowBox[{"QQ0", "=", "QQsave"}], ";"}], ",", 
               RowBox[{"{", 
                RowBox[{"dimToVary", ",", "1", ",", "lmax"}], "}"}]}], "]"}], 
-            "]"}]}], ";", "\[IndentingNewLine]", "\n", " ", 
+            "]"}]}], ";", "\n", "\[IndentingNewLine]", " ", 
           RowBox[{"Actionnew", " ", "=", 
            RowBox[{"Actionnew", " ", "+", 
             RowBox[{"Total", "[", 
@@ -1259,7 +1258,7 @@ Cell[BoxData[
               RowBox[{"-", "betad"}], ")"}], 
              RowBox[{"(", 
               RowBox[{"Actionnew", " ", "-", " ", "Action"}], ")"}]}], 
-            "]"}]}], ";", "\[IndentingNewLine]", "\n", "          ", 
+            "]"}]}], ";", "\n", "\[IndentingNewLine]", "          ", 
           RowBox[{"rr", " ", "=", " ", 
            RowBox[{"RandomReal", "[", 
             RowBox[{"{", 
@@ -1408,8 +1407,10 @@ Cell[BoxData[
    3.7505102019004498`*^9}, {3.750510252286227*^9, 3.750510290496726*^9}, {
    3.750510878328109*^9, 3.750510882938512*^9}, {3.750511716846614*^9, 
    3.750511728536591*^9}, 3.750567069966793*^9, {3.750575217989603*^9, 
-   3.750575275976071*^9}, {3.75057545264832*^9, 3.750575455596348*^9}},
- CellLabel->"In[37]:=",ExpressionUUID->"6b8b053c-b64e-46f2-8001-7dd391a08afc"],
+   3.750575275976071*^9}, {3.75057545264832*^9, 3.750575455596348*^9}, {
+   3.751189551197093*^9, 3.751189567687688*^9}, {3.751189764857613*^9, 
+   3.751189846808384*^9}},
+ CellLabel->"In[15]:=",ExpressionUUID->"6b8b053c-b64e-46f2-8001-7dd391a08afc"],
 
 Cell[CellGroupData[{
 
@@ -1831,29 +1832,29 @@ CellTagsIndex->{}
 *)
 (*NotebookFileOutline
 Notebook[{
-Cell[558, 20, 38301, 980, 1021, "Input",ExpressionUUID->"f5269d81-9c31-4212-914c-5f6a23ca6d53"],
-Cell[38862, 1002, 21293, 409, 1412, "Input",ExpressionUUID->"6b8b053c-b64e-46f2-8001-7dd391a08afc"],
+Cell[558, 20, 38365, 982, 1021, "Input",ExpressionUUID->"f5269d81-9c31-4212-914c-5f6a23ca6d53"],
+Cell[38926, 1004, 21246, 408, 1343, "Input",ExpressionUUID->"6b8b053c-b64e-46f2-8001-7dd391a08afc"],
 Cell[CellGroupData[{
-Cell[60180, 1415, 10408, 244, 354, "Input",ExpressionUUID->"d63463ce-723a-485e-b3bb-17becf178e82"],
-Cell[70591, 1661, 2314, 44, 115, "Output",ExpressionUUID->"bec769ef-d526-4dc3-ba2f-bce3412c395b"]
+Cell[60197, 1416, 10408, 244, 354, "Input",ExpressionUUID->"d63463ce-723a-485e-b3bb-17becf178e82"],
+Cell[70608, 1662, 2314, 44, 59, "Output",ExpressionUUID->"bec769ef-d526-4dc3-ba2f-bce3412c395b"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[72942, 1710, 433, 10, 55, "Input",ExpressionUUID->"9eca68a2-c2dd-4549-809b-bef814b4c639"],
-Cell[73378, 1722, 223, 3, 35, "Output",ExpressionUUID->"c6ad0589-e04f-418e-b867-ee977c8fa817"]
+Cell[72959, 1711, 433, 10, 55, "Input",ExpressionUUID->"9eca68a2-c2dd-4549-809b-bef814b4c639"],
+Cell[73395, 1723, 223, 3, 35, "Output",ExpressionUUID->"c6ad0589-e04f-418e-b867-ee977c8fa817"]
 }, Open  ]],
-Cell[73616, 1728, 152, 3, 31, "Input",ExpressionUUID->"82b011f5-e255-4d58-a223-c256e6991bd5"],
-Cell[73771, 1733, 818, 22, 124, "Input",ExpressionUUID->"5a356506-7bc1-47da-87e2-baf3b356d683"],
+Cell[73633, 1729, 152, 3, 31, "Input",ExpressionUUID->"82b011f5-e255-4d58-a223-c256e6991bd5"],
+Cell[73788, 1734, 818, 22, 124, "Input",ExpressionUUID->"5a356506-7bc1-47da-87e2-baf3b356d683"],
 Cell[CellGroupData[{
-Cell[74614, 1759, 180, 2, 31, "Input",ExpressionUUID->"13350c69-4f80-4e8b-b160-8811647ed8e6"],
-Cell[74797, 1763, 1322, 22, 134, "Output",ExpressionUUID->"97b0a846-fb5c-4b43-97db-55d464b64cef"]
-}, Open  ]],
-Cell[CellGroupData[{
-Cell[76156, 1790, 180, 2, 31, "Input",ExpressionUUID->"7e7c45b8-1113-4d72-956e-4c15d19b83a9"],
-Cell[76339, 1794, 233, 4, 35, "Output",ExpressionUUID->"0abd3436-2b06-4bea-b114-e7de3942db28"]
+Cell[74631, 1760, 180, 2, 31, "Input",ExpressionUUID->"13350c69-4f80-4e8b-b160-8811647ed8e6"],
+Cell[74814, 1764, 1322, 22, 134, "Output",ExpressionUUID->"97b0a846-fb5c-4b43-97db-55d464b64cef"]
 }, Open  ]],
 Cell[CellGroupData[{
-Cell[76609, 1803, 298, 7, 31, "Input",ExpressionUUID->"6302432b-1500-4319-b967-76b510a7acca"],
-Cell[76910, 1812, 178, 2, 35, "Output",ExpressionUUID->"aee7c446-3ebe-4157-b7fa-3f39aa227f11"]
+Cell[76173, 1791, 180, 2, 31, "Input",ExpressionUUID->"7e7c45b8-1113-4d72-956e-4c15d19b83a9"],
+Cell[76356, 1795, 233, 4, 35, "Output",ExpressionUUID->"0abd3436-2b06-4bea-b114-e7de3942db28"]
+}, Open  ]],
+Cell[CellGroupData[{
+Cell[76626, 1804, 298, 7, 31, "Input",ExpressionUUID->"6302432b-1500-4319-b967-76b510a7acca"],
+Cell[76927, 1813, 178, 2, 35, "Output",ExpressionUUID->"aee7c446-3ebe-4157-b7fa-3f39aa227f11"]
 }, Open  ]]
 }
 ]

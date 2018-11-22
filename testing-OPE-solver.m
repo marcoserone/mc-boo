@@ -1,7 +1,9 @@
 (* ::Package:: *)
 
-(* ::Input::Initialization:: *)
+(* ::Input:: *)
 (*Define symmetric quantization rho*)
+
+
 CleanSlate;
 $MinPrecision=MachinePrecision;
   \[Rho]z[z_] := z/(1 + Sqrt[1 - z])^2; 
@@ -160,7 +162,6 @@ opeFree[n_]:=2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
 
 
 
-(* ::Code:: *)
 (*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
 (*initial=4;*)
 (*final=9;*)
@@ -170,7 +171,6 @@ opeFree[n_]:=2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
 (*ParallelTable[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,ToString[i]];mcPlotDimsAndOPEs[initial,final,1000,88,seed,ToString[i]],{seed,555,558}],{i,2,10}];*)
 
 
-(* ::Code:: *)
 (*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
 (*nvec={3000,2000,2000,2000,2000,2000};*)
 (*\[CapitalDelta]Linitial={#+1,#-2}&/@Range[2,18,2];*)
@@ -179,7 +179,11 @@ opeFree[n_]:=2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
 (*Table[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,"anche_OPEs"];mcPlotDimsAndOPEs[initial,final,1000,88,seed,"anche_OPEs"],{seed,566,585}];*)
 
 
-Export[Table[{{nop,isigmaz,IntegerPart[10^(inz/2)]},checkMetroWeighted[1,deltaFree[nop],90,123,IntegerPart[10^(inz/2)],10^(-isigmaz)]},{nop,1,12},{isigmaz,1,4},{inz,3,10}],"screeningOPEsolver.txt"]
+(* ::Code:: *)
+(*a=Table[{{nop,isigmaz,IntegerPart[10^(inz/2)]},checkMetroWeighted[1,deltaFree[nop],90,123,IntegerPart[10^(inz/2)],10^(-isigmaz)]},{nop,1,12},{isigmaz,1,4},{inz,3,10}];*)
+(*Print[Dimensions[a]];*)
+(*Export["scanningOPEsolver.txt",a]*)
+(**)
 
 
-
+(*{{5,2,IntegerPart[10^(5/2)]},checkMetroWeighted[1,deltaFree[5],90,123,IntegerPart[10^(5/2)],10^(-2)]}*)
