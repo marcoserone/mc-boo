@@ -45,7 +45,14 @@ $MinPrecision=MachinePrecision;
       (*random sample of z around (1/2+I0)*)
            Sample[nz_,var_,seed_] := Module[{imax}, SeedRandom[seed];Table[Abs[RandomVariate[NormalDistribution[0, var]]]+
            1/2+I Abs[RandomVariate[NormalDistribution[0, var]]],{imax,1,nz}]]; 
-qQGen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]_,L_,zsample_]:=(((1 - zsample)*(1 - Conjugate[zsample]))^\[CapitalDelta]\[Phi]    ConformalBlock[\[CapitalDelta], L , zsample]- ((zsample)*( Conjugate[zsample]))^\[CapitalDelta]\[Phi] ConformalBlock[\[CapitalDelta], L,1- zsample])2^(L);qQGenDims[\[CapitalDelta]\[Phi]_,\[CapitalDelta]L_,z_]:=qQGen[1,#1[[1]],#1[[2]], z]&/@\[CapitalDelta]L
+(*Exponential factor to renormalize*)
+dimExpFactor[a_,b_]:=Log[4(1-Sqrt[1/2 -a -b])^2/(1/2 + a +b)];
+
+renomFactor[dim_]:=Exp[-(dim-1)dimExpFactor[0,0]];
+(*renomFactor[dim_]:=1;*)
+(*Conformal Blocks*)
+qQGen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]_,L_,zsample_]:=renomFactor[\[CapitalDelta]] (((1 - zsample)*(1 - Conjugate[zsample]))^\[CapitalDelta]\[Phi]    ConformalBlock[\[CapitalDelta], L , zsample]- ((zsample)*( Conjugate[zsample]))^\[CapitalDelta]\[Phi] ConformalBlock[\[CapitalDelta], L,1- zsample])2^(L);
+qQGenDims[\[CapitalDelta]\[Phi]_,\[CapitalDelta]L_,z_]:=qQGen[1,#1[[1]],#1[[2]], z]&/@\[CapitalDelta]L
 MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_]:=Block[{itd, DDldata, sigmaz, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, Nz, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
     IdsampleEx,zOPE,QQOPE,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,smearedaction}, 
@@ -135,7 +142,7 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
-results=weightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
+results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
 finalcheck=Abs[results[[1]].QQ0-Idsample]<errSample//Thread;
 Return[{results,And@@finalcheck}];
 ]
@@ -158,7 +165,7 @@ Export["opes-plot"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runi
 Return[opes[[;;,2]]]
 ]
 deltaFree[n_]:={2#,2#-2}&/@Range[1,n,1];
-opeFree[n_]:=2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
+opeFreeRen[n_]:=(renomFactor[2#])^(-1) 2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
 
 
 
@@ -179,7 +186,6 @@ opeFree[n_]:=2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
 (*Table[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,"anche_OPEs"];mcPlotDimsAndOPEs[initial,final,1000,88,seed,"anche_OPEs"],{seed,566,585}];*)
 
 
-(* ::Code:: *)
 (*a=Table[{{nop,isigmaz,IntegerPart[10^(inz/2)]},checkMetroWeighted[1,deltaFree[nop],90,123,IntegerPart[10^(inz/2)],10^(-isigmaz)]},{nop,1,12},{isigmaz,1,4},{inz,3,10}];*)
 (*Print[Dimensions[a]];*)
 (*Export["scanningOPEsolver.txt",a]*)
@@ -187,3 +193,12 @@ opeFree[n_]:=2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
 
 
 (*{{5,2,IntegerPart[10^(5/2)]},checkMetroWeighted[1,deltaFree[5],90,123,IntegerPart[10^(5/2)],10^(-2)]}*)
+
+
+errorDep=checkMetroWeighted[1,deltaFree[10],90,123,#,10^(-4/3)][[1,2,1]]/checkMetroWeighted[1,deltaFree[10],90,123,#,10^(-4/3)][[1,1,1]]&/@Range[15,415,20]
+
+
+ListPlot[{Range[15,415,20],errorDep}//Transpose,Joined->True]
+
+
+
