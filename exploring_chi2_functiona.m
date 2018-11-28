@@ -1,9 +1,5 @@
 (* ::Package:: *)
 
-(* ::Input:: *)
-(*Define symmetric quantization rho*)
-
-
 CleanSlate;
 $MinPrecision=MachinePrecision;
   \[Rho]z[z_] := z/(1 + Sqrt[1 - z])^2; 
@@ -53,6 +49,15 @@ renomFactor[dim_]:=Exp[-(dim-1)dimExpFactor[0,0]];
 (*Conformal Blocks*)
 qQGen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]_,L_,zsample_]:=renomFactor[\[CapitalDelta]] (((1 - zsample)*(1 - Conjugate[zsample]))^\[CapitalDelta]\[Phi]    ConformalBlock[\[CapitalDelta], L , zsample]- ((zsample)*( Conjugate[zsample]))^\[CapitalDelta]\[Phi] ConformalBlock[\[CapitalDelta], L,1- zsample])2^(L);
 qQGenDims[\[CapitalDelta]\[Phi]_,\[CapitalDelta]L_,z_]:=qQGen[1,#1[[1]],#1[[2]], z]&/@\[CapitalDelta]L
+
+(*Nice action functional*)
+chi2Functional[qq0_,id_,w_,rhovec_]:=Block[{nu,s,r},
+nu = Dimensions[w][[1]]-Length[rhovec];
+r=(qq0.rhovec-id);
+s=r.w.r;
+Return[s/nu]];
+
+(*Metropolis MC routine*)
 MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_]:=Block[{itd, DDldata, sigmaz, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, Nz, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
     IdsampleEx,zOPE,QQOPE,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,smearedaction}, 
@@ -115,7 +120,7 @@ rhovec=Inverse[Transpose[qq0].w.qq0].Transpose[qq0] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0.rhovec-id);
 s=r.w.r;
-Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2),r, s/nu}]];
+Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2), s/nu}]];
 
 metroReturnAvg[prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_]:=Block[{data},
 MetroGoFixedSelectiveDir[1,\[CapitalDelta]L,nit,prec,\[Beta],seed,1/10,1/3,Length[\[CapitalDelta]L],ToString[Length[\[CapitalDelta]L]]<>"id"<>idtag,initialOps];
@@ -166,39 +171,87 @@ Return[opes[[;;,2]]]
 ]
 deltaFree[n_]:={2#,2#-2}&/@Range[1,n,1];
 opeFreeRen[n_]:=(renomFactor[2#])^(-1) 2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
+(*deltascanner*)
+checkMetroWScan[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,nZ_,sigmaz_,dimToVary_,x_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]LOriginal}, 
+(* \[CapitalDelta]L[[5,1]] = SetPrecision[\[CapitalDelta]L[[5,1]]+ 5/100000,prec];*)
+ \[CapitalDelta]L[[dimToVary,1]] = SetPrecision[\[CapitalDelta]L[[dimToVary,1]]+ x,prec];
+checkMetroWeighted[\[CapitalDelta]\[Phi],\[CapitalDelta]L,prec,seed,nZ,sigmaz]
+]
+
+(*OPE dependence exploration*)
+opeCoeffDependencePlotter[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,rhoexp_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,rhoarray}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,sigmaz,seed]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
+rhoarray=Table[results[[1]],{i,1,21}];
+rhoarray[[;;,rhoexp]]=(rhoarray[[#,rhoexp]](1+(#-11)/1000000))&/@Range[1,21];
+{rhoarray[[;;,rhoexp]]-results[[1,rhoexp]],chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],#]&/@rhoarray}//Transpose
+]
+biDimChi2DependencePlotter[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,range_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,deltaArray}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,sigmaz,seed]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
+ContourPlot[\[CapitalDelta]L[[1,1]]=2+x;\[CapitalDelta]L[[2,1]]=4+y;QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]],{x,-range,range},{y,-range/1000,range/1000},PlotLegends->Automatic]
+]
+biDimChi2DependenceDataGen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,range_,npoints_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,deltaArray}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,sigmaz,seed]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
+ParallelTable[{\[CapitalDelta]L[[1,1]]=2+x range/npoints, \[CapitalDelta]L[[2,1]]=4+ y  range/npoints, QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]]},{x,-npoints,npoints},{y,-npoints,npoints}]
+]
 
 
-
-(*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
-(*initial=4;*)
-(*final=9;*)
-(*nvec={3000,2000,2000,2000,2000,2000};*)
-(*Table[*)
-(*\[CapitalDelta]Linitial={#+2i/10,#-2}&/@Range[2,18,2];*)
-(*ParallelTable[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,ToString[i]];mcPlotDimsAndOPEs[initial,final,1000,88,seed,ToString[i]],{seed,555,558}],{i,2,10}];*)
-
-
-(*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
-(*nvec={3000,2000,2000,2000,2000,2000};*)
-(*\[CapitalDelta]Linitial={#+1,#-2}&/@Range[2,18,2];*)
-(*initial=4*)
-(*final=9*)
-(*Table[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,"anche_OPEs"];mcPlotDimsAndOPEs[initial,final,1000,88,seed,"anche_OPEs"],{seed,566,585}];*)
-
-
-(*a=Table[{{nop,isigmaz,IntegerPart[10^(inz/2)]},checkMetroWeighted[1,deltaFree[nop],90,123,IntegerPart[10^(inz/2)],10^(-isigmaz)]},{nop,1,12},{isigmaz,1,4},{inz,3,10}];*)
-(*Print[Dimensions[a]];*)
-(*Export["scanningOPEsolver.txt",a]*)
-(**)
-
-
-(*{{5,2,IntegerPart[10^(5/2)]},checkMetroWeighted[1,deltaFree[5],90,123,IntegerPart[10^(5/2)],10^(-2)]}*)
-
-
-errorDep=checkMetroWeighted[1,deltaFree[10],90,123,#,10^(-4/3)][[1,2,1]]/checkMetroWeighted[1,deltaFree[10],90,123,#,10^(-4/3)][[1,1,1]]&/@Range[15,415,20]
-
-
-ListPlot[{Range[15,415,20],errorDep}//Transpose,Joined->True]
+(* ::Input:: *)
+(*a=biDimChi2DependenceDataGen[1,deltaFree[10],110,123,10000,10^(-6/5),1/20000,100]//Chop;*)
+(*aflat=Flatten[a,1];*)
+(*aflat[[;;,3]]=aflat[[;;,3]]//Log;*)
+(*Export["data-creicrei.tsv",aflat];*)
+(*ListPlot3D[aflat,PlotRange->All]*)
 
 
 
