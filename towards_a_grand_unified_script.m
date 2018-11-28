@@ -198,7 +198,7 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
 func0=logDetFunctional[QQ0,{Idsample}];
 gradientLog=(Table[\[CapitalDelta]L[[i,1]]=\[CapitalDelta]L[[i,1]]+epsilon; QQ0[[i]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[i]][[1]],\[CapitalDelta]L[[1]][[2]],zsample];\[CapitalDelta]L[[i,1]]=\[CapitalDelta]LOriginal[[i,1]];
-logDetFunctional[QQ0,{Idsample}],{i,1,Length[\[CapitalDelta]L]}]-func0)/(2epsilon)
+logDetFunctional[QQ0,{Idsample}],{i,1,Length[\[CapitalDelta]L]}]-func0)/(epsilon)
 
 ]
 gradientComparisonChi[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,epsilon_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
@@ -221,8 +221,8 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
 results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
 func0=chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]];
-gradient=(Table[\[CapitalDelta]L[[i,1]]=\[CapitalDelta]L[[i,1]]-epsilon; QQ0[[i]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[i]][[1]],\[CapitalDelta]L[[1]][[2]],zsample];results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];\[CapitalDelta]L[[i,1]]=\[CapitalDelta]LOriginal[[i,1]];
-chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]],{i,1,Length[\[CapitalDelta]L]}]-func0)/(2epsilon)
+gradient=(Table[\[CapitalDelta]L[[i,1]]=\[CapitalDelta]L[[i,1]]+epsilon; QQ0[[i]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[i]][[1]],\[CapitalDelta]L[[1]][[2]],zsample];results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];\[CapitalDelta]L[[i,1]]=\[CapitalDelta]LOriginal[[i,1]];
+chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]],{i,1,Length[\[CapitalDelta]L]}]-func0)/(epsilon)
 
 ]
 
@@ -255,8 +255,8 @@ chiscan2//Log
 
 
 
-logscan2=ParallelTable[Table[gradientComparisonLog[1,deltamc[[i]],88,123,10,1/10,10^(-j)],{i,1,3}],{j,9,12}]
-chiscan2=ParallelTable[Table[gradientComparisonChi[1,deltamc[[i]],88,123,200,1/10,10^(-j)],{i,1,3}],{j,9,12}]
+logscan2=ParallelTable[Table[gradientComparisonLog[1,deltamc[[i]],120,123,10,1/10,10^(-j)],{i,1,3}],{j,13,20}]
+chiscan2=ParallelTable[Table[gradientComparisonChi[1,deltamc[[i]],120,123,300,1/10,10^(-j)],{i,1,3}],{j,13,20}]
 
 
 logscan2//Sign
@@ -269,24 +269,26 @@ Export["logscanfd.txt",{logscan,logscan2}]
 ListPlot[logscan2[[;;,3,2]],Joined->True,PlotRange->All]
 
 
-ListPlot[chiscan2[[;;,3,1]],Joined->True,PlotRange->All]
+ListPlot[chiscan2[[;;,3,2]]//Log,Joined->True,PlotRange->All]
 
 
-(*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
-(*initial=4;*)
-(*final=9;*)
-(*nvec={3000,2000,2000,2000,2000,2000};*)
-(*Table[*)
-(*\[CapitalDelta]Linitial={#+2i/10,#-2}&/@Range[2,18,2];*)
-(*ParallelTable[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,ToString[i]];mcPlotDimsAndOPEs[initial,final,1000,88,seed,ToString[i]],{seed,555,558}],{i,2,10}];*)
+$MachineEpsilon
 
 
-(*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
-(*nvec={3000,2000,2000,2000,2000,2000};*)
-(*\[CapitalDelta]Linitial={#+1,#-2}&/@Range[2,18,2];*)
-(*initial=4*)
-(*final=9*)
-(*Table[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,"anche_OPEs"];mcPlotDimsAndOPEs[initial,final,1000,88,seed,"anche_OPEs"],{seed,566,585}];*)
+logscan=ParallelTable[Table[gradientComparisonLog[1,deltamc[[i]],120,123,10,1/10,10^(-j)],{i,1,3}],{j,3,8}]
+chiscan=ParallelTable[Table[gradientComparisonChi[1,deltamc[[i]],120,123,300,1/10,10^(-j)],{i,1,3}],{j,3,8}]
 
 
-{1,2}-a
+ListPlot[logscan[[;;,2,2]]//Log,Joined->True,PlotRange->All]
+
+
+ListPlot[{Range[3,8],(chiscan[[;;,1,4]]//Log)}//Transpose,Joined->True,PlotRange->All]
+
+
+f[x_,y_]:=Log[x^2 + y^2];
+
+
+df[x_,y_,epsilon_]:={(f[x+epsilon,y]-f[x,y])/epsilon,(f[x,y+epsilon]-f[x,y])/epsilon}
+
+
+df[1,2,1/10000]
