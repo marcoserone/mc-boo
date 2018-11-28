@@ -1,7 +1,9 @@
 (* ::Package:: *)
 
-(* ::Input::Initialization:: *)
+(* ::Input:: *)
 (*Define symmetric quantization rho*)
+
+
 CleanSlate;
 $MinPrecision=MachinePrecision;
   \[Rho]z[z_] := z/(1 + Sqrt[1 - z])^2; 
@@ -176,10 +178,100 @@ Export["opes-plot"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runi
 Return[opes[[;;,2]]]
 ]
 
+gradientComparisonLog[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,epsilon_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,gradientLog,func0}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,sigmaz,seed]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+func0=logDetFunctional[QQ0,{Idsample}];
+gradientLog=(Table[\[CapitalDelta]L[[i,1]]=\[CapitalDelta]L[[i,1]]+epsilon; QQ0[[i]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[i]][[1]],\[CapitalDelta]L[[1]][[2]],zsample];\[CapitalDelta]L[[i,1]]=\[CapitalDelta]LOriginal[[i,1]];
+logDetFunctional[QQ0,{Idsample}],{i,1,Length[\[CapitalDelta]L]}]-func0)/(2epsilon)
+
+]
+gradientComparisonChi[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,epsilon_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,gradient,func0}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,sigmaz,seed]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
+func0=chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]];
+gradient=(Table[\[CapitalDelta]L[[i,1]]=\[CapitalDelta]L[[i,1]]-epsilon; QQ0[[i]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[i]][[1]],\[CapitalDelta]L[[1]][[2]],zsample];results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];\[CapitalDelta]L[[i,1]]=\[CapitalDelta]LOriginal[[i,1]];
+chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]],{i,1,Length[\[CapitalDelta]L]}]-func0)/(2epsilon)
+
+]
+
+(*assorted functions*)
+deltaFree[n_]:={2#,2#-2}&/@Range[1,n,1];
+opeFreeRen[n_]:=(renomFactor[2#])^(-1) 2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
+
+
+deltasimport=Import["~/mc-boo/gooddims"]//ToExpression;
+deltamc=Table[Transpose[{deltasimport[[i]],Range[0,16,2]}],{i,1,3}]
 
 
 
-(* ::Code:: *)
+
+logfd=Table[gradientComparisonLog[1,deltamc[[i]],88,123,10,1/10,1/10000000],{i,1,3}]
+chifd=Table[gradientComparisonChi[1,deltamc[[i]],88,123,50,1/10,1/10000000],{i,1,3}]
+
+
+
+Table[gradientComparisonChi[1,deltamc[[i]],90,123,100,1/10,1/10000],{i,1,3}]
+
+
+Table[(deltamc[[i]]-deltaFree[9])[[;;,1]]//Sign,{i,1,3}]
+Sign[logfd]
+Sign[chifd]
+
+
+logscan2//Log
+chiscan2//Log
+
+
+
+logscan2=ParallelTable[Table[gradientComparisonLog[1,deltamc[[i]],88,123,10,1/10,10^(-j)],{i,1,3}],{j,9,12}]
+chiscan2=ParallelTable[Table[gradientComparisonChi[1,deltamc[[i]],88,123,200,1/10,10^(-j)],{i,1,3}],{j,9,12}]
+
+
+logscan2//Sign
+chiscan2//Sign
+Export["chiscanfd.txt",{chiscan,chiscan2}]
+
+Export["logscanfd.txt",{logscan,logscan2}]
+
+
+ListPlot[logscan2[[;;,3,2]],Joined->True,PlotRange->All]
+
+
+ListPlot[chiscan2[[;;,3,1]],Joined->True,PlotRange->All]
+
+
 (*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
 (*initial=4;*)
 (*final=9;*)
@@ -189,10 +281,12 @@ Return[opes[[;;,2]]]
 (*ParallelTable[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,ToString[i]];mcPlotDimsAndOPEs[initial,final,1000,88,seed,ToString[i]],{seed,555,558}],{i,2,10}];*)
 
 
-(* ::Code:: *)
 (*\[Beta]vec={1/7,1/9,1/10,1/11,1/12,1/13};*)
 (*nvec={3000,2000,2000,2000,2000,2000};*)
 (*\[CapitalDelta]Linitial={#+1,#-2}&/@Range[2,18,2];*)
 (*initial=4*)
 (*final=9*)
 (*Table[mcIterator[initial,final,\[CapitalDelta]Linitial,\[Beta]vec,1000,88,seed,nvec,"anche_OPEs"];mcPlotDimsAndOPEs[initial,final,1000,88,seed,"anche_OPEs"],{seed,566,585}];*)
+
+
+{1,2}-a
