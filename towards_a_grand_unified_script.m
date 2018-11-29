@@ -61,6 +61,12 @@ r=(qq0.rhovec-id);
 s=r.w.r;
 Return[s/nu]];
 
+chi2Functional[qq0_,id_,w_]:=Block[{nu,s,r,rhovec=(weightedLeastSquares[qq0,id,w])[[1]];},
+nu = Dimensions[w][[1]]-Length[rhovec];
+r=(qq0.rhovec-id);
+s=r.w.r;
+Return[s/nu]];
+
 logDetFunctional[qq0_,id_]:=Block[{pp},
 pp=Join[qq0,id];
 Return[Log[Det[pp]^2]]];
@@ -116,6 +122,51 @@ smearedaction=Reap[Table[
           rr = RandomReal[{0, 1}];
           If[metcheck>rr, Action = Actionnew,\[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold];
           
+$MinPrecision=10;
+   dw=\[CapitalDelta]L[[All,1]];
+          Sow[ {it, dw, N[Action,10]}],
+     {it, 1, Ndit}]]; 
+$MinPrecision=3;
+      Export["Res-fixed_Param_Nit="<>ToString[Ndit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[betad,3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[dcross,3]]<>"seed="<>ToString[seed]<>"id="<>idTag<>".txt", TotD[[2]]];]
+
+(*MC routine-Chi2*)
+MetroGoFixedSelectiveDirChi2[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,Nz_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_]:=Block[{itd, DDldata, sigmaz, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample,  PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    IdsampleEx,zOPE,QQOPE,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,errSample}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,1/100,seed]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+     
+          errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+    (*Monte Carlo Iteration*)
+TotD =   Reap[ Do[
+$MinPrecision=prec;
+          \[CapitalDelta]LOld=\[CapitalDelta]L;
+          QQold=QQ0;  
+
+  dimToVary = RandomInteger[{1,lmax}];
+       (*Shift one dimension by a random amount*)       
+          \[CapitalDelta]L[[dimToVary,1]] = \[CapitalDelta]L[[dimToVary,1]]+ RandomVariate[NormalDistribution[0, sigmaMC]];
+(*Reevaluate coefficients*)
+           QQ0[[dimToVary]] = qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],zsample];
+  Actionnew =chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
+
+
+          metcheck = Exp[(-betad)*(Actionnew - Action)];
+          rr = RandomReal[{0, 1}];
+          If[metcheck>rr, Action = Actionnew,\[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold];
+         Print[metcheck];
 $MinPrecision=10;
    dw=\[CapitalDelta]L[[All,1]];
           Sow[ {it, dw, N[Action,10]}],
@@ -237,6 +288,9 @@ deltasimport=Import["~/mc-boo/gooddims"]//ToExpression;
 deltamc=Table[Transpose[{deltasimport[[i]],Range[0,16,2]}],{i,1,3}]
 
 
+
+
+MetroGoFixedSelectiveDirChi2[1,deltamc[[1]],1000,100,88,1/100,123,1/50,1/3,9,"testing"]
 
 
 logfd=Table[gradientComparisonLog[1,deltamc[[i]][[1;;3]],88,123,4,1/10,1/10000000],{i,1,3}]
