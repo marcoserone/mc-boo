@@ -197,8 +197,10 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
 func0=logDetFunctional[QQ0,{Idsample}];
-gradientLog=(Table[\[CapitalDelta]L[[i,1]]=\[CapitalDelta]L[[i,1]]+epsilon; QQ0[[i]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[i]][[1]],\[CapitalDelta]L[[1]][[2]],zsample];\[CapitalDelta]L[[i,1]]=\[CapitalDelta]LOriginal[[i,1]];
-logDetFunctional[QQ0,{Idsample}],{i,1,Length[\[CapitalDelta]L]}]-func0)/(epsilon)
+gradientLog=(Table[
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];\[CapitalDelta]L[[i,1]]=\[CapitalDelta]L[[i,1]]+epsilon; QQ0[[i]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[i]][[1]],\[CapitalDelta]L[[i]][[2]],zsample];\[CapitalDelta]L[[i,1]]=\[CapitalDelta]LOriginal[[i,1]];
+logDetFunctional[QQ0,{Idsample}],{i,1,Length[\[CapitalDelta]L]}]-func0)/(epsilon);
+Return[{func0,gradientLog}];
 
 ]
 gradientComparisonChi[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,epsilon_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
@@ -221,9 +223,9 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
 results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
 func0=chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]];
-gradient=(Table[\[CapitalDelta]L[[i,1]]=\[CapitalDelta]L[[i,1]]+epsilon; QQ0[[i]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[i]][[1]],\[CapitalDelta]L[[1]][[2]],zsample];results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];\[CapitalDelta]L[[i,1]]=\[CapitalDelta]LOriginal[[i,1]];
-chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]],{i,1,Length[\[CapitalDelta]L]}]-func0)/(epsilon)
-
+gradient=(Table[ QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];\[CapitalDelta]L[[i,1]]=\[CapitalDelta]L[[i,1]]+epsilon; QQ0[[i]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[i]][[1]],\[CapitalDelta]L[[i]][[2]],zsample];results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];\[CapitalDelta]L[[i,1]]=\[CapitalDelta]LOriginal[[i,1]];
+chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]],{i,1,Length[\[CapitalDelta]L]}]-func0)/(epsilon);
+Return[{func0,gradient}];
 ]
 
 (*assorted functions*)
@@ -237,8 +239,8 @@ deltamc=Table[Transpose[{deltasimport[[i]],Range[0,16,2]}],{i,1,3}]
 
 
 
-logfd=Table[gradientComparisonLog[1,deltamc[[i]],88,123,10,1/10,1/10000000],{i,1,3}]
-chifd=Table[gradientComparisonChi[1,deltamc[[i]],88,123,50,1/10,1/10000000],{i,1,3}]
+logfd=Table[gradientComparisonLog[1,deltamc[[i]][[1;;3]],88,123,4,1/10,1/10000000],{i,1,3}]
+chifd=Table[gradientComparisonChi[1,deltamc[[i]][[1;;3]],88,123,50,1/10,1/10000000],{i,1,3}]
 
 
 
@@ -255,21 +257,32 @@ chiscan2//Log
 
 
 
-logscan2=ParallelTable[Table[gradientComparisonLog[1,deltamc[[i]],120,123,10,1/10,10^(-j)],{i,1,3}],{j,13,20}]
-chiscan2=ParallelTable[Table[gradientComparisonChi[1,deltamc[[i]],120,123,300,1/10,10^(-j)],{i,1,3}],{j,13,20}]
+logscan2=ParallelTable[Table[gradientComparisonLog[1,deltamc[[i]],120,123,10,1/10,10^(-j)],{i,1,3}],{j,12,12}]
+chiscan2=ParallelTable[Table[gradientComparisonChi[1,deltamc[[i]],120,123,600,1/10,10^(-j)],{i,1,3}],{j,12,12}]
 
 
-logscan2//Sign
-chiscan2//Sign
+coinlog=(logscan2[[3]]//Sign)ref
+coinchi=(chiscan2[[3]]//Sign)ref
 Export["chiscanfd.txt",{chiscan,chiscan2}]
 
 Export["logscanfd.txt",{logscan,logscan2}]
 
 
-ListPlot[logscan2[[;;,3,2]],Joined->True,PlotRange->All]
+coinlog//Total
+coinchi//Total
 
 
-ListPlot[chiscan2[[;;,3,2]]//Log,Joined->True,PlotRange->All]
+logscan2[[1,;;,2]]
+chiscan2[[1]]
+
+
+ref=Table[(deltamc[[i]]-deltaFree[9])[[;;,1]]//Sign,{i,1,3}]
+
+
+ListPlot[logscan2[[1,;;,2]],Joined->True,PlotRange->All]
+
+
+ListPlot[chiscan2[[1,2;;3,2]],Joined->True,PlotRange->All]
 
 
 $MachineEpsilon
@@ -279,10 +292,13 @@ logscan=ParallelTable[Table[gradientComparisonLog[1,deltamc[[i]],120,123,10,1/10
 chiscan=ParallelTable[Table[gradientComparisonChi[1,deltamc[[i]],120,123,300,1/10,10^(-j)],{i,1,3}],{j,3,8}]
 
 
-ListPlot[logscan[[;;,2,2]]//Log,Joined->True,PlotRange->All]
+ListPlot[logscan2[[;;,2,3]],Joined->True,PlotRange->All]
 
 
-ListPlot[{Range[3,8],(chiscan[[;;,1,4]]//Log)}//Transpose,Joined->True,PlotRange->All]
+ListPlot[chiscan2[[;;,1,2]],Joined->True,PlotRange->All]
+
+
+a=(Table[i,{i,1,10}]-3)/7
 
 
 f[x_,y_]:=Log[x^2 + y^2];
