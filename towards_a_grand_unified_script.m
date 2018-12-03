@@ -295,21 +295,23 @@ opeFreeRen[n_]:=(renomFactor[2#])^(-1) 2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
 
 
 
+(*this imports the dimensions obtained at the end of the previous MCs*)
 deltasimport=Import["~/mc-boo/gooddims"]//ToExpression;
 deltamc=Table[Transpose[{deltasimport[[i]],Range[0,16,2]}],{i,1,3}];
 
 
 
 
-MetroGoFixedSelectiveDirChi2[1,deltamc[[1]],1000,100,88,10^(11),123,1/50,1/3,9,"testing"]
-
-
-logfd=Table[gradientComparisonLog[1,deltamc[[i]][[1;;3]],88,123,4,1/10,1/10000000],{i,1,3}]
-chifd=Table[gradientComparisonChi[1,deltamc[[i]][[1;;3]],88,123,50,1/10,1/10000000],{i,1,3}]
+(*This runs the gradient function with the above imported dimensions*)
+logfd=Table[gradientComparisonLog[1,deltamc[[i]],88,123,10,1/10,1/10000000],{i,1,3}]
+chifd=Table[gradientComparisonChi[1,deltamc[[i]],88,123,50,1/10,1/10000000],{i,1,3}]
 
 
 
 Table[gradientComparisonChi[1,deltamc[[i]],90,123,100,1/10,1/10000],{i,1,3}]
+
+
+MetroGoFixedSelectiveDirChi2[1,deltamc[[1]],1000,100,88,10^(11),123,1/50,1/3,9,"testing"]
 
 
 Table[(deltamc[[i]]-deltaFree[9])[[;;,1]]//Sign,{i,1,3}]
