@@ -180,7 +180,10 @@ rhovec=Inverse[Transpose[qq0].w.qq0].Transpose[qq0] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0.rhovec-id);
 s=r.w.r;
-Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2), s/nu}]];
+If[And@@(rhovec>0//Thread),
+Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2), s/nu}],Print[Dimensions[qq0]];{Join[weightedLeastSquares[qq0[[;;,1;;-2]],id,w][[1]],{0}],weightedLeastSquares[qq0[[;;,1;;-2]],id,w][[2;;3]]} 
+];
+]
 
 metroReturnAvg[\[CapitalDelta]\[Phi]_,prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_]:=Block[{data},
 MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi],\[CapitalDelta]L,nit,prec,\[Beta],seed,1/10,1/3,Length[\[CapitalDelta]L],ToString[Length[\[CapitalDelta]L]]<>idtag,initialOps];
@@ -215,6 +218,8 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
 results=weightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
+
+
 finalcheck=Abs[results[[1]].QQ0-Idsample]<errSample//Thread;
 Return[{results,And@@finalcheck}];
 ];
@@ -501,10 +506,22 @@ ParallelTable[mcIterator[16/10,4,8,{{3,0},{5,2},{7,4},{9,6},{10,8},{7,2},{9,2},{
 Plot3D[genLog[1+x,{{2+y,0},{2(1+x) + 2,2},{2(1+x) + 4,2},{2(1+x) + 4,4}},88,123,5,1/100],{x,-1/10,1/2},{y,-1,1}]
 
 
-a=Table[Plot[genLog[1+x/10,{{2+y,0},{2(1+x/10) + 2,2},{2(1+x/10) + 4,2},{2(1+x/10) + 4,4}},88,123,5,1/100],{y,-1/10,1},MaxRecursion->5],{x,0,5}]
+a=Table[Plot[genLog[1+x/10,{{2+y,0},{2(1+x/10) + 2,2},{2(1+x/10) + 4,2},{2(1+x/10) + 4,4}},88,123,5,1/100],{y,-1,1},MaxRecursion->5],{x,0,5}]
 
 
 
 
 
 Plot[genLog[1+x/10,{{2+y,0},{2(1+x) + 2,2},{2(1+x) + 4,2},{2(1+x) + 4,4}},88,123,5,1/100],{y,-1/10,1},MaxRecursion->5]
+
+
+Show[a[[2]]]
+
+
+Join[checkMetroWeighted[1,deltaFree[8],88,123,100][[1,1]],{0}]
+
+
+checkMetroWeighted[1,deltamc[[1]],88,123,1000]
+
+
+
