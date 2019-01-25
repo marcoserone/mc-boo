@@ -175,14 +175,14 @@ $MinPrecision=10;
 $MinPrecision=3;
       Export["Res-chi_Param_Nit="<>ToString[Ndit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[betad,3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[dcross,3]]<>"seed="<>ToString[seed]<>"Nz="<>ToString[Nz]<>"id="<>idTag<>".txt", TotD[[2]]];]
 
-cweightedLeastSquares[qq0_,id_,w_]:=Block[{rhovec,nu,s,r},
+cweightedLeastSquares[qq0_,id_,w_,n_]:=Block[{rhovec,nu,s,r},
 rhovec=Inverse[Transpose[qq0].w.qq0].Transpose[qq0] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0.rhovec-id);
 s=r.w.r;
-If[And@@(rhovec>0//Thread),
+If[And@@(rhovec>=0//Thread),
 Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2), s/nu}],
-Print[Dimensions[qq0[[;;,1;;-2]]]];Return[{Join[cweightedLeastSquares[qq0[[;;,1;;-2]],id,w][[1]],{0}],Join[cweightedLeastSquares[qq0[[;;,1;;-2]],id,w][[2]],{0}],cweightedLeastSquares[qq0[[;;,1;;-2]],id,w][[3]]} ]];
+Print[n];Return[{Join[cweightedLeastSquares[qq0[[;;,1;;-1-n]],id,w,n+1][[1]],{0}],Join[cweightedLeastSquares[qq0[[;;,1;;-1-n]],id,w,n+1][[2]],{0}],cweightedLeastSquares[qq0[[;;,1;;-1-n]],id,w,n+1][[3]]} ]];
 ]
 weightedLeastSquares[qq0_,id_,w_]:=Block[{rhovec,nu,s,r},
 rhovec=Inverse[Transpose[qq0].w.qq0].Transpose[qq0] . w.id;
@@ -248,7 +248,9 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
-results=cweightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
+results=weightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
+While[Or@@(results[[1]]<0//Thread),\[CapitalDelta]L = Drop[\[CapitalDelta]L,-1];QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];Print["Failed"];
+results=weightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];];
 
 
 finalcheck=Abs[results[[1]].QQ0-Idsample]<errSample//Thread;
@@ -561,10 +563,27 @@ ccheckMetroWeighted[1,deltamc[[2]],88,123,500,1/100]
 
 
 
-f[x_]:=Block[{a},If[And@@(x>0//Thread),Return[x],Print[Length[x]];Return[(f[x[[1;;-2]]])]]]
+f[x_]:=Block[{a},If[And@@(x>0//Thread),Return[x],Print[Length[x]];Return[Join[f[x[[1;;-2]]],{0}]]]]
 
 
-f[{1,5,6,2,3,-7,8,4,2,56,-5}]
+aaa=RandomReal[{-1/10,1},10];
+f[aaa]
+
+
+
+
+
+checkMetroWeighted[1,deltamc[[2]][[1;;4]],88,123,500,1/100]
+ccheckMetroWeighted[1,deltamc[[2]][[1;;6]],88,123,500,1/100]
+
+
+ccheckMetroWeighted[1,deltamc[[2]],88,123,200,1/100]
+
+
+ccheckMetroWeighted[1,deltamc[[2]],88,123,300,1/100]
+
+
+
 
 
 
