@@ -212,7 +212,7 @@ Export["zoom-Plot-chi_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta
 
 checkMetroWeighted[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
-    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample}, 
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,res}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
 $MaxPrecision=prec;
@@ -231,12 +231,14 @@ errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]L
 results=weightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
 
 
-finalcheck=Abs[results[[1]].QQ0-Idsample]<errSample//Thread;
+res=results[[1]].QQ0-Idsample;
+Export["histogram-res-nocon-dist.pdf",Histogram[res,Round[Nz/20]]];
+finalcheck=Abs[res]<errSample//Thread;
 Return[{results,And@@finalcheck}];
 ];
 ccheckMetroWeightedBis[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
-    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample}, 
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,res}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
 $MaxPrecision=prec;
@@ -254,37 +256,13 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
 results=cweightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
 
-
-finalcheck=Abs[results[[1]].QQ0-Idsample]<errSample//Thread;
+res=results[[1]].QQ0-Idsample;
+Export["histogram-res-dist.pdf",Histogram[res,Round[Nz/50]]];
+finalcheck=Abs[res]<errSample//Thread;
 Return[{results,And@@finalcheck}];
 ];
 
-ccheckMetroWeighted[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
-    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
-    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample}, 
-    (*precision*)
-SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
-$MaxPrecision=prec;
-$MinPrecision=prec;
 
-    SeedRandom[seed];
-  zsample = Sample[Nz,sigmaz,seed]; 
-Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
-        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
-    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
-  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
-  
-
-    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
-errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
-results=weightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
-While[Or@@(results[[1]]<0//Thread),\[CapitalDelta]L = Drop[\[CapitalDelta]L,-1];QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];Print["Failed"];
-results=weightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];];
-
-
-finalcheck=Abs[results[[1]].QQ0-Idsample]<errSample//Thread;
-Return[{results,And@@finalcheck}];
-];
 
 mcIterator[\[CapitalDelta]\[Phi]_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seed_,nits_,runid_,sigmaz_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results},
 results=Reap[Table[\[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed,initialOps,runid]][[1]];
@@ -595,15 +573,11 @@ ccheckMetroWeighted[1,deltamc[[2]],88,123,500,1/100]
 f[x_]:=Block[{a},If[And@@(x>0//Thread),Return[x],Print[Length[x]];Return[Join[f[x[[1;;-2]]],{0}]]]]
 
 
-aaa=RandomReal[{-1/10,1},10];
-f[aaa]
-
-
-
+$MinPrecision=5;
+N[opeFreeRen[9],5]
 
 
 checkMetroWeighted[1,deltamc[[2]][[1;;4]],88,123,500,1/100]
-ccheckMetroWeighted[1,deltamc[[2]][[1;;6]],88,123,500,1/100]
 
 
 ccheckMetroWeighted[1,deltamc[[2]],88,123,200,1/100]
@@ -619,7 +593,39 @@ ccheckMetroWeightedBis[1,deltamc[[2]],88,123,100,1/100]
 
 
 
-ccheckMetroWeightedBis[1,deltamc[[2]][[1;;8]],88,123,100,1/100]
+a=ccheckMetroWeightedBis[1,deltamc[[3]],88,123,500,1/100]
+b=checkMetroWeighted[1,deltamc[[3]],88,123,500,1/100]
+
+
+
+
+$MinPrecision=5;
+N[a,5]
+N[b,5]
+
+
+a=ccheckMetroWeightedBis[1,deltamc[[1]],88,123,500,1/100];
+b=checkMetroWeighted[1,deltamc[[1]],88,123,500,1/100];
+$MinPrecision=5;
+N[a,5]
+N[b,5]
+N[deltamc[[1]],5]
+
+
+a=ccheckMetroWeightedBis[1,deltamc[[2]],88,123,500,1/100];
+b=checkMetroWeighted[1,deltamc[[2]],88,1,500,1/100];
+$MinPrecision=5;
+N[a,5]
+N[b,5]
+N[deltamc[[2]],5]
+
+
+a=ccheckMetroWeightedBis[1,deltamc[[3]],88,123,500,1/100];
+b=checkMetroWeighted[1,deltamc[[3]],88,13,500,1/100];
+$MinPrecision=5;
+N[a,5]
+N[b,5]
+N[deltamc[[3]],5]
 
 
 
