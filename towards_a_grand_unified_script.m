@@ -256,6 +256,14 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
 results=cweightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
 
+  zsample = Sample[Nz,sigmaz,seed+1]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+
+
 res=results[[1]].QQ0-Idsample;
 Export["histogram-res-dist.pdf",Histogram[res,Round[Nz/50]]];
 finalcheck=Abs[res]<errSample//Thread;
@@ -612,8 +620,11 @@ N[b,5]
 N[deltamc[[1]],5]
 
 
+Count[a[[2]],True]/5
+
+
 a=ccheckMetroWeightedBis[1,deltamc[[2]],88,123,500,1/100];
-b=checkMetroWeighted[1,deltamc[[2]],88,1,500,1/100];
+b=checkMetroWeighted[1,deltamc[[2]],88,123,500,1/100];
 $MinPrecision=5;
 N[a,5]
 N[b,5]
@@ -629,3 +640,6 @@ N[deltamc[[3]],5]
 
 
 
+
+
+ConstantArray[0,0]
