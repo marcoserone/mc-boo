@@ -61,7 +61,7 @@ r=(qq0.rhovec-id);
 s=r.w.r;
 Return[s/nu]];
 
-chi2Functional[qq0_,id_,w_]:=Block[{nu,s,r,rhovec=(weightedLeastSquares[qq0,id,w])[[1]];},
+chi2Functional[qq0_,id_,w_]:=Block[{nu,s,r,rhovec=(cweightedLeastSquares[qq0,id,w])[[1]];},
 nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0.rhovec-id);
 s=r.w.r;
@@ -438,6 +438,50 @@ logDetFunctional[QQ0,{Idsample}]
 ];
 
 
+biDimChi2DependencePlotter[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,range_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,deltaArray}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,sigmaz,seed]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+results=cweightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
+ContourPlot[\[CapitalDelta]L[[1,1]]=2+x;\[CapitalDelta]L[[2,1]]=4+y;QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]],{x,-range,range},{y,-range/1000,range/1000},PlotLegends->Automatic]
+]
+biDimChi2DependenceDataGen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,range_,npoints_,opstovary_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,deltaArray}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,sigmaz,seed]; 
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+results=cweightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
+ParallelTable[{\[CapitalDelta]L[[opstovary[[1]],1]]=\[CapitalDelta]LOriginal[[opstovary[[1]],1]]+x range/npoints, \[CapitalDelta]L[[opstovary[[2]],1]]=\[CapitalDelta]LOriginal[[opstovary[[2]],1]]+ y  range/npoints, QQ0[[opstovary]] = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[opstovary]],zsample];
+results=cweightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]]},{x,-npoints,npoints},{y,-npoints,npoints}]
+]
+
 
 (*this imports the dimensions obtained at the end of the previous MCs*)
 deltasimport=Import["~/mc-boo/gooddims"]//ToExpression;
@@ -631,6 +675,22 @@ N[b,5]
 N[deltamc[[2]],5]
 
 
+a=ccheckMetroWeightedBis[1,deltamc[[2]],88,123,500,1/1000];
+b=checkMetroWeighted[1,deltamc[[2]],88,123,500,1/1000];
+$MinPrecision=5;
+N[a,5]
+N[b,5]
+N[deltamc[[2]],5]
+
+
+a=ccheckMetroWeightedBis[1,deltamc[[2]],120,123,500,1/10000];
+b=checkMetroWeighted[1,deltamc[[2]],120,123,500,1/10000];
+$MinPrecision=5;
+N[a,5]
+N[b,5]
+N[deltamc[[2]],5]
+
+
 a=ccheckMetroWeightedBis[1,deltamc[[3]],88,123,500,1/100];
 b=checkMetroWeighted[1,deltamc[[3]],88,13,500,1/100];
 $MinPrecision=5;
@@ -642,4 +702,18 @@ N[deltamc[[3]],5]
 
 
 
-ConstantArray[0,0]
+a=ccheckMetroWeightedBis[1,deltamc[[3]],150,123,500,1/1000];
+$MinPrecision=5;
+N[a,5]
+N[deltamc[[3]],5]
+
+
+Table[Flatten[biDimChi2DependenceDataGen[1,deltaFree[9],90,123,1200,10^(-1),1/500,30,{i,i+1}]//Chop,1];
+Export["data-correct-2n4-zoommm.tsv",a],{i,1,6}]
+
+
+a=Flatten[biDimChi2DependenceDataGen[1,deltaFree[10],90,123,1200,10^(-1),1/500,30,{1,2}]//Chop,1];
+Export["data-correct-2n4-zoommm.tsv",a]
+
+
+opeFreeRen[15]//N
