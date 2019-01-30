@@ -480,7 +480,53 @@ errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]L
 results=cweightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
 ParallelTable[{\[CapitalDelta]L[[opstovary[[1]],1]]=\[CapitalDelta]LOriginal[[opstovary[[1]],1]]+x range/npoints, \[CapitalDelta]L[[opstovary[[2]],1]]=\[CapitalDelta]LOriginal[[opstovary[[2]],1]]+ y  range/npoints, QQ0[[opstovary]] = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[opstovary]],zsample];
 results=cweightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]]},{x,-npoints,npoints},{y,-npoints,npoints}]
-]
+];
+
+(*This function is analogous to ccheckMetroWeightedBis, but it takes an arbitrary set of OPE coefficients instead of solving for them.*)
+manCheck[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,rhovec_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini,
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,res},
+    (*precision*)
+    SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,sigmaz,seed];
+Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+res=(rhovec.QQ0-Idsample)/errSample;
+finalcheck=Abs[res]<1//Thread;
+Return[{Sqrt[(res.res)/(Nz-Length[rhovec])],And@@finalcheck}];
+];
+(*REsidual plotter*)
+resFunc[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,rhovec_,prec_,x_,y_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini,
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,res},
+    (*precision*)
+    SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+  zsample = x + I y;
+Idsample = SetPrecision[(zsample*Conjugate[zsample])^\[CapitalDelta]\[Phi] -
+        ((1 - zsample)*(1 - Conjugate[zsample]))^\[CapitalDelta]\[Phi],prec];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+errSample= \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample,1];
+res=(rhovec.QQ0-Idsample)/errSample;
+Return[res];
+];
+
 
 
 (*this imports the dimensions obtained at the end of the previous MCs*)
@@ -717,3 +763,41 @@ Export["data-correct-2n4-zoommm.tsv",a]
 
 
 opeFreeRen[15]//N
+
+
+exact=manCheck[1,deltaFree[9],88,123,500,1/10,opeFreeRen[9]]//N
+
+
+Plot3D[resFunc[1,deltaFree[9],opeFreeRen[9],88,x,y],{x,3/5,7/8},{y,1/4,7/8}]
+
+
+Plot3D[resFunc[1,deltaFree[9],opeMin[[1,1]],88,x,y],{x,3/5,7/8},{y,1/4,7/8}]
+
+
+Plot3D[resFunc[1,deltaFree[9],opeMin[[1,1]],88,x,y],{x,2/5,7/8},{y,-1/4,7/8},PlotRange->{-1,1}]
+
+
+Plot3D[resFunc[1,deltaFree[9],opeFreeRen[9],88,x,y],{x,2/5,7/8},{y,-1/4,7/8},PlotRange->{-1,1}]
+
+
+opeMin=ccheckMetroWeightedBis[1,deltaFree[9],88,123,500,1/10]
+
+
+min=manCheck[1,deltaFree[9],88,3,500,1/10,opeMin[[1,1]]]
+
+
+$MinPrecision=5
+opeMin[[1,1]]//N
+opeFreeRen[9]//N
+
+
+min[[1]]//N
+
+
+b=ccheckMetroWeightedBis[1,deltamc[[2]],88,123,500,1/10];
+
+
+b//N
+
+
+Plot3D[resFunc[1,deltamc[[2]],b[[1,1]],88,x,y],{x,2/5,7/8},{y,-1/4,7/8},PlotRange->{-1,1}]
