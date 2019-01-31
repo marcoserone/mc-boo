@@ -187,14 +187,14 @@ rhovec=Inverse[Transpose[qq0bis].w.qq0bis].Transpose[qq0bis] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0bis.rhovec-id);
 s=r.w.r;n=n+1];
-Return[{Join[rhovec,ConstantArray[0,n-1]],(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2), s/nu}];
+Return[{Join[rhovec,ConstantArray[0,n-1]],(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2), Sqrt[s/nu]}];
 ]
 weightedLeastSquares[qq0_,id_,w_]:=Block[{rhovec,nu,s,r},
 rhovec=Inverse[Transpose[qq0].w.qq0].Transpose[qq0] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0.rhovec-id);
 s=r.w.r;
-Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2), s/nu}];
+Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2), Sqrt[s/nu]}];
 ]
 metroReturnAvg[\[CapitalDelta]\[Phi]_,prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_]:=Block[{data},
 MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi],\[CapitalDelta]L,nit,prec,\[Beta],seed,1/10,1/3,Length[\[CapitalDelta]L],ToString[Length[\[CapitalDelta]L]]<>idtag,initialOps];
@@ -227,14 +227,14 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
   
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
-errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],0],{i,1,Nz}];
 results=weightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
 
 
 res=results[[1]].QQ0-Idsample;
 Export["histogram-res-nocon-dist.pdf",Histogram[res,Round[Nz/20]]];
 finalcheck=Abs[res]<errSample//Thread;
-Return[{results,And@@finalcheck}];
+Return[{results,If[And@@finalcheck,And@@finalcheck,finalcheck]}];
 ];
 ccheckMetroWeightedBis[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
@@ -253,7 +253,7 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
   
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
-errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],0],{i,1,Nz}];
 results=cweightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
 
   zsample = Sample[Nz,sigmaz,seed+1]; 
@@ -267,7 +267,7 @@ errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]L
 res=results[[1]].QQ0-Idsample;
 Export["histogram-res-dist.pdf",Histogram[res,Round[Nz/50]]];
 finalcheck=Abs[res]<errSample//Thread;
-Return[{results,And@@finalcheck}];
+Return[{results,If[And@@finalcheck,And@@finalcheck,finalcheck]}];
 ];
 
 
@@ -500,10 +500,10 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
   
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
-errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],0],{i,1,Nz}];
 res=(rhovec.QQ0-Idsample)/errSample;
 finalcheck=Abs[res]<1//Thread;
-Return[{Sqrt[(res.res)/(Nz-Length[rhovec])],And@@finalcheck}];
+Return[{Sqrt[(res.res)/(Nz-Length[rhovec])],If[And@@finalcheck,And@@finalcheck,finalcheck]}];
 ];
 (*REsidual plotter*)
 resFunc[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,rhovec_,prec_,x_,y_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini,
@@ -522,7 +522,7 @@ Idsample = SetPrecision[(zsample*Conjugate[zsample])^\[CapitalDelta]\[Phi] -
   
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
-errSample= \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample,1];
+errSample= \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample,0];
 res=(rhovec.QQ0-Idsample)/errSample;
 Return[res];
 ];
@@ -777,7 +777,7 @@ Plot3D[resFunc[1,deltaFree[9],opeMin[[1,1]],88,x,y],{x,3/5,7/8},{y,1/4,7/8}]
 Plot3D[resFunc[1,deltaFree[9],opeMin[[1,1]],88,x,y],{x,2/5,7/8},{y,-1/4,7/8},PlotRange->{-1,1}]
 
 
-Plot3D[resFunc[1,deltaFree[9],opeFreeRen[9],88,x,y],{x,2/5,7/8},{y,-1/4,7/8},PlotRange->{-1,1}]
+Plot3D[resFunc[1,deltaFree[9],opeFreeRen[9],88,x,y],{x,2/5,7/8},{y,-1/4,7/8},PlotRange->All]
 
 
 opeMin=ccheckMetroWeightedBis[1,deltaFree[9],88,123,500,1/10]
@@ -794,10 +794,25 @@ opeFreeRen[9]//N
 min[[1]]//N
 
 
-b=ccheckMetroWeightedBis[1,deltamc[[2]],88,123,500,1/10];
+b10=ccheckMetroWeightedBis[1,deltamc[[2]],88,23,500,1/10];
 
 
-b//N
+b10//N
 
 
-Plot3D[resFunc[1,deltamc[[2]],b[[1,1]],88,x,y],{x,2/5,7/8},{y,-1/4,7/8},PlotRange->{-1,1}]
+Plot3D[resFunc[1,deltamc[[2]],b10[[1,1]],88,x,y],{x,2/5,7/8},{y,-1/4,7/8},PlotRange->All]
+
+
+Count[manCheck[1,deltamc[[2]],88,3,500,1/100,b10[[1,1]]][[2]],True]
+
+
+28/500//N
+
+
+c10=ccheckMetroWeightedBis[1,deltamc[[3]],88,23,500,1/10];
+
+
+a10=ccheckMetroWeightedBis[1,deltamc[[1]],88,23,500,1/10];
+
+
+Count[c10[[2]],True]
