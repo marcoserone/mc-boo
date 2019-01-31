@@ -239,7 +239,7 @@ Return[{results,If[And@@finalcheck,And@@finalcheck,finalcheck]}];
 ];
 ccheckMetroWeightedBis[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
-    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,res}, 
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,res,nzeros}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
 $MaxPrecision=prec;
@@ -264,7 +264,9 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
 
+nzeros=Count[results[[1]],0];
 
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]]-2 nzeros,zsample[[i]],1],{i,1,Nz}];
 res=results[[1]].QQ0-Idsample;
 Export["histogram-res-dist.pdf",Histogram[res,Round[Nz/50]]];
 finalcheck=Abs[res]<errSample//Thread;
@@ -273,12 +275,12 @@ Return[{results,Count[finalcheck,True]/Nz}];
 
 
 
-mcIterator[\[CapitalDelta]\[Phi]_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results,it,seed=seedO},
+mcIterator[\[CapitalDelta]\[Phi]_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,tol_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results,it,seed=seedO},
 it=initialOps;
 results=Reap[
 While[it<=finalOps,
 \[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid]][[1]];
-If[Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]][[2]]>3/5,it=it+1,\[CapitalDelta]L[[1;;it,1]]=\[CapitalDelta]L[[1;;it,1]]+Table[RandomReal[{-1/10,1/10}],{i,1,it}];Print["Rejected"];seed=seed+finalOps;]];
+If[Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]][[2]]>tol,it=it+1,\[CapitalDelta]L[[1;;it,1]]=\[CapitalDelta]L[[1;;it,1]]+Table[RandomReal[{-1/10,1/10}],{i,1,it}];Print["Rejected"];seed=seed+finalOps;]];
 ];
 Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
 ]
@@ -534,15 +536,12 @@ Return[res];
 
 
 \[CapitalDelta]L={{3,0},{5,2},{7,4},{9,6},{11,8},{13,10},{15,12},{17,14},{19,16}};
-\[Beta]list={1/5,1/6,1/7,1/8,1/9,1/10,1/11,1/13,1/5};
-nits={500,100,100,100,100,100,100,100,100};
-mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,100,88,3423,nits,"Bigzigma",1/10]
+\[Beta]list={1/5,1/6,1/7,1/8,1/9,1/10,1/11,1/13,1/15};
+nits=5{500,100,100,100,100,100,100,100,100};
+ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,100,88,100+50tol,nits,"tol="<>ToString[tol],1/10,tol/10],{tol,1,9}]
 
 
 \[CapitalDelta]L={{3,0},{5,2},{7,4},{9,6},{11,8},{13,10},{15,12},{17,14},{19,16}};
-\[Beta]list={1/5,1/6,1/7,1/8,1/9,1/10,1/11,1/13,1/5};
+\[Beta]list={1/5,1/6,1/7,1/8,1/9,1/10,1/11,1/13,1/15};
 nits=5{500,100,100,100,100,100,100,100,100};
-mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,100,88,300,nits,"test-autocheck",1/10]
-
-
-If[{True,True},a=1]
+ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,500,88,1000+50tol,nits,"tol="<>ToString[tol],1/10,tol/10],{tol,1,9}]
