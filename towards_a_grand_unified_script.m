@@ -794,13 +794,16 @@ opeFreeRen[9]//N
 min[[1]]//N
 
 
-b10=ccheckMetroWeightedBis[1,deltamc[[2]],88,23,500,1/10];
+b=ccheckMetroWeightedBis[1,deltamc[[2]],88,23,500,1/100];
 
 
 b10//N
 
 
-Plot3D[resFunc[1,deltamc[[2]],b10[[1,1]],88,x,y],{x,2/5,7/8},{y,-1/4,7/8},PlotRange->All]
+ContourPlot[resFunc[1,deltamc[[2]],b10[[1,1]],88,x,y]//Abs,{x,2/5,7/8},{y,-1/4,7/8},PlotLegends->Automatic]
+
+
+ContourPlot[resFunc[1,deltamc[[2]],b[[1,1]],88,x,y]//Abs,{x,2/5,7/8},{y,-1/4,7/8},PlotLegends->Automatic]
 
 
 Count[manCheck[1,deltamc[[2]],88,3,500,1/100,b10[[1,1]]][[2]],True]
@@ -816,3 +819,18 @@ a10=ccheckMetroWeightedBis[1,deltamc[[1]],88,23,500,1/10];
 
 
 Count[c10[[2]],True]
+
+
+Export["big_sigma.pdf",%78]
+
+
+Export["small_sigma.pdf",%77]
+
+
+ParallelTable[Export["exact-landscape-deltastar="<>ToString[2i]<>".pdf",ContourPlot[resFunc[1,deltaFree[i],opeFreeRen[i],88,x,y]//Abs,{x,2/5,7/8},{y,-1/4,7/8},PlotLegends->Automatic]],{i,2,10}];
+
+
+ParallelTable[Export["Log-allrange-exact-landscape-deltastar="<>ToString[2i]<>".pdf",ContourPlot[resFunc[1,deltaFree[i],opeFreeRen[i],88,x,y]//Abs//Log,{x,2/5,7/8},{y,-1/4,7/8},PlotLegends->Automatic,PlotRange->All]],{i,2,10}];
+
+
+ParallelTable[Export["extended-cross-sat-exact-landscape-deltastar="<>ToString[2i]<>".pdf",ContourPlot[resFunc[1,deltaFree[i],opeFreeRen[i],88,x,y]//Abs,{x,2/5,11/10},{y,-1/4,11/10},PlotLegends->Automatic,PlotRange->{0,1}]],{i,2,10}];
