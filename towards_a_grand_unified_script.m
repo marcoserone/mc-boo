@@ -149,7 +149,7 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
      
-          errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
+          errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],0],{i,1,Nz}];
     (*Monte Carlo Iteration*)
 TotD =   Reap[ Do[
 $MinPrecision=prec;
@@ -161,7 +161,7 @@ $MinPrecision=prec;
           \[CapitalDelta]L[[dimToVary,1]] = \[CapitalDelta]L[[dimToVary,1]]+ RandomVariate[NormalDistribution[0, sigmaMC]];
 (*Reevaluate coefficients*)
            QQ0[[dimToVary]] = qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],zsample];
-results=weightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
+results=cweightedLeastSquares[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)]];
 Actionnew=chi2Functional[(QQ0//Transpose),Idsample,DiagonalMatrix[errSample^(-2)],results[[1]]]//Sqrt;
 
 
@@ -183,7 +183,6 @@ r=(qq0.rhovec-id);
 s=r.w.r;
 While[Or@@(rhovec<0//Thread),
 qq0bis=qq0[[;;,1;;-1-n]];
-Print[Dimensions[qq0bis]];
 rhovec=Inverse[Transpose[qq0bis].w.qq0bis].Transpose[qq0bis] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0bis.rhovec-id);
@@ -535,6 +534,10 @@ Return[res];
 
 
 
+deltasimport=Import["~/mc-boo/gooddims"]//ToExpression;
+deltamc=Table[Transpose[{deltasimport[[i]],Range[0,16,2]}],{i,1,3}];
+
+
 \[CapitalDelta]L={{3,0},{5,2},{7,4},{9,6},{11,8},{13,10},{15,12},{17,14},{19,16}};
 \[Beta]list={1/5,1/6,1/7,1/8,1/9,1/10,1/11,1/13,1/15};
 nits=5{500,100,100,100,100,100,100,100,100};
@@ -545,3 +548,12 @@ ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,100,88,100+50tol,nit
 \[Beta]list={1/5,1/6,1/7,1/8,1/9,1/10,1/11,1/13,1/15};
 nits=5{500,100,100,100,100,100,100,100,100};
 ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,500,88,1000+50tol,nits,"tol="<>ToString[tol],1/10,tol/10],{tol,1,9}]
+
+
+ParallelTable[metroReturnAvgChi2[88,5000,100,i/100,deltamc[[2]],1+i,4,"whutup",1/10,1/100],{i,1,20}]
+
+
+metroReturnAvgChi2[88,1000,100,1/100,deltamc[[2]],1,4,"whutup",1/10,1/100]
+
+
+
