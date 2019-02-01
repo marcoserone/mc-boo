@@ -133,7 +133,7 @@ $MinPrecision=3;
 (*MC routine-Chi2*)
 MetroGoFixedSelectiveDirChi2[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,Nz_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample,  PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
-    IdsampleEx,zOPE,QQOPE,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,errSample,results,nzeros=Length[\[CapitalDelta]LOriginal],fracvio=100,nzerosnew,fracvionew,res}, 
+    IdsampleEx,zOPE,QQOPE,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,errSample,results,nzeros=Length[\[CapitalDelta]LOriginal],fracvio=100,nzerosnew,fracvionew,res,sigmamods=ConstantArray[1,Length[\[CapitalDelta]LOriginal]]}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate},WorkingPrecision->prec];
 $MaxPrecision=prec;
@@ -158,7 +158,7 @@ $MinPrecision=prec;
 
   dimToVary = RandomInteger[{1,lmax}];
        (*Shift one dimension by a random amount*)       
-          \[CapitalDelta]L[[dimToVary,1]] = \[CapitalDelta]L[[dimToVary,1]]+ RandomVariate[NormalDistribution[0, sigmaMC]];
+          \[CapitalDelta]L[[dimToVary,1]] = \[CapitalDelta]L[[dimToVary,1]]+ RandomVariate[NormalDistribution[0, sigmamods[[dimToVary]] sigmaMC]];
 (*Reevaluate coefficients*)
            QQ0[[dimToVary]] = qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],zsample];
            results=cweightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
@@ -176,7 +176,7 @@ nzerosnew=Count[results[[1]],0];
 fracvionew=Count[Abs[res]<1//Thread,False]/Nz;
 Print[{nzerosnew,fracvionew}];
 
-          If[fracvionew<fracvio || nzeros>nzerosnew, fracvio = fracvionew;nzeros=nzerosnew,\[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold];
+          If[fracvionew<fracvio || nzeros>nzerosnew, fracvio = fracvionew;nzeros=nzerosnew;sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (101/100),\[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold;sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (99/100)];
 $MinPrecision=10;
    dw=\[CapitalDelta]L[[All,1]];
           Sow[ {it, dw,results[[1]], {nzerosnew,fracvionew}}],
@@ -583,6 +583,9 @@ ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,500,88,1000+50tol,ni
 
 
 ParallelTable[metroReturnAvgChi2[88,5000,100,i/100,deltamc[[2]],1+i,4,"whutup",1/10,1/100],{i,1,20}]
+
+
+metroReturnAvgChi2[88,5000,500,1/100,deltamc[[2]],3421,4,"adaptative-test",1/10,1/100]
 
 
 metroReturnAvgChi2[88,1100,500,1/100,deltamc[[2]],3421,4,"whutup",1/10,1/100]
