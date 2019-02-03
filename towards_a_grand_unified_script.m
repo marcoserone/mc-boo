@@ -109,7 +109,7 @@ $MinPrecision=3;
 (*MC routine-Chi2*)
 MetroGoFixedSelectiveDirChi2[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,Nz_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample,  PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
-    IdsampleEx,zOPE,QQOPE,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,errSample,results,nzeros=Length[\[CapitalDelta]LOriginal],fracvio=100,nzerosnew,fracvionew,res,sigmamods=ConstantArray[1,Length[\[CapitalDelta]LOriginal]]}, 
+    IdsampleEx,zOPE,QQOPE,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,resultsOld,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,errSample,results,nzeros=Length[\[CapitalDelta]LOriginal],fracvio=100,nzerosnew,fracvionew,res,sigmamods=ConstantArray[1,Length[\[CapitalDelta]LOriginal]]}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate},WorkingPrecision->prec];
 $MaxPrecision=prec;
@@ -130,7 +130,8 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 TotD =   Reap[ Do[
 $MinPrecision=prec;
           \[CapitalDelta]LOld=\[CapitalDelta]L;
-          QQold=QQ0;  
+          QQold=QQ0; 
+          resultsOld=results; 
 
   If[it==1,dimToVary = RandomInteger[{1,lmax}],dimToVary = RandomInteger[{1,lmax-nzeros}]];
        (*Shift one dimension by a random amount*)       
@@ -151,7 +152,8 @@ res=(results[[1]].QQ0-Idsample)/errSample;
 nzerosnew=Count[results[[1]],0];
 fracvionew=Count[Abs[res]<1//Thread,False]/Nz;
 
-          If[fracvionew<fracvio (*|| nzeros>nzerosnew*), fracvio = fracvionew;nzeros=nzerosnew;sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (101/100),\[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold;sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (99/100)];
+          If[fracvionew<fracvio (*|| nzeros>nzerosnew*), fracvio = fracvionew;nzeros=nzerosnew;sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (101/100),
+          \[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold;   results=resultsOld; sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (99/100)];
 $MinPrecision=10;
    dw=\[CapitalDelta]L[[All,1]];
           Sow[ {it, dw,results[[1]], {nzeros,fracvio}}],
@@ -189,7 +191,7 @@ Export["zoom-Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"be
 metroReturnAvgChi2[prec_,nit_,Nz_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_,sigmaz_,sigmaMC_]:=Block[{data},
 MetroGoFixedSelectiveDirChi2[1,\[CapitalDelta]L,Nz,nit,prec,\[Beta],seed,sigmaMC,1/3,Length[\[CapitalDelta]L],idtag,sigmaz];
 data= Get["Res-chi_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"Nz="<>ToString[Nz]<>"id="<>idtag<>".txt"];
-Export["zoom-Plot-chi_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[1/10,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"Nz="<>ToString[Nz]<>"id="<>idtag<>".pdf",ListPlot[Table[data[[All,2]][[All,i]]-2i+1,{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{{0,nit},{9/10,11/10}},PlotLegends->\[CapitalDelta]L[[;;,2]],PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
+Export["zoom-Plot-chi_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"Nz="<>ToString[Nz]<>"id="<>idtag<>".pdf",ListPlot[Table[data[[All,2]][[All,i]]-2i+1,{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{{0,nit},{9/10,11/10}},PlotLegends->\[CapitalDelta]L[[;;,2]],PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
 {Mean[data[[All,2]][[nit-100;;nit,1;;Length[\[CapitalDelta]L]]]],StandardDeviation[data[[All,2]][[nit-100;;nit,1;;Length[\[CapitalDelta]L]]]],Mean[data[[All,3]][[nit-100;;nit,1;;Length[\[CapitalDelta]L]]]],StandardDeviation[data[[All,3]][[nit-100;;nit,1;;Length[\[CapitalDelta]L]]]]}]
 
 checkMetroWeighted[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
@@ -556,16 +558,16 @@ nits=5{500,100,100,100,100,100,100,100,100};
 ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,500,88,1000+50tol,nits,"tol="<>ToString[tol],1/10,tol/10],{tol,1,9}]
 
 
-ParallelTable[metroReturnAvgChi2[88,3000,200,10^(-i),deltamc[[2]],1+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
+ParallelTable[metroReturnAvgChi2[100,3000,200,10^(-i),deltamc[[2]],10+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
 
 
-ParallelTable[metroReturnAvgChi2[88,3000,200,10^(-i),deltamc[[3]],1+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
+ParallelTable[metroReturnAvgChi2[100,3000,200,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
 
 
-ParallelTable[metroReturnAvgChi2[88,3000,1000,10^(-i),deltamc[[2]],1+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
+ParallelTable[metroReturnAvgChi2[100,3000,1000,10^(-i),deltamc[[2]],10+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
 
 
-ParallelTable[metroReturnAvgChi2[88,3000,1000,10^(-i),deltamc[[3]],1+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
+ParallelTable[metroReturnAvgChi2[100,3000,1000,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
 
 
 metroReturnAvgChi2[88,5000,500,1/100,deltamc[[2]],3421,4,"adaptative-test",1/10,1/100]
