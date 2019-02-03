@@ -158,33 +158,23 @@ where amazingly precise operator dimensions and OPE coefficients have been deter
 
 \section{Bootstrap Basics.}
 Consider the 4-point function of a scalar primary operator $\phi$ with scaling dimension $\Delta_\phi$: 
-\be
+\begin{equation}
 \label{4-point-function}
 \langle \phi(x_1) \phi(x_2) \phi(x_3) \phi(x_4) \rangle \, = \, \frac{g(z,\bar z)}{x_{12}^{2\Delta_\phi}x_{34}^{2\Delta_\phi} } \,,
-\ee
+\end{equation}
 where $z$ and $\bar z$ are so called conformally-invariant cross-ratios made up of $x_{ij}\equiv x_i-x_j$.
 Applying the OPE to the operator pairs $\phi(x_1) \phi(x_2)$ and $\phi(x_3) \phi(x_4)$ in the 4-point function, one can write
-\be
+\begin{equation}
 g(z,\bar z) = 1+\sum_{\Delta ,l } p_{\mathcal{O}} \, g_{\Delta,l}(z,\bar z) \,, 
 \label{CBExp}
- \ee
+ \end{equation}
 where the sum runs over all primary operators $\mathcal{O}$ that appear in the $\phi\times \phi$ OPE with  $\Delta$ and $l$ being respectively their dimension and spin. Notice that $l$ has to be even
 for identical scalars. For each primary, the sum over all its descendants is encoded in the conformal block function $g_{\Delta,l}(z,\bar z)$. Reflection positivity (i.e. unitarity) implies bounds on both the squared OPE coefficients $p_{\mathcal{O}}$
 and the scaling dimensions $\Delta$:
-\be
+\begin{equation}
 p_{\mathcal{O}} >0 \;\; \forall \mathcal{O}\,,  \quad
  \Delta \geq l+d-2 \;\; (l>0)\,, \quad \Delta \geq \frac{d-2}2 \;\; (l=0).
-\ee
-The sum over $\Delta$ (and hence over $l$) can be truncated up to a value $\Delta_*$. The following error estimate holds (for $\Delta_*\gg 1$):
-\be
-\Big|\sum_{(\Delta\geq \Delta_*),l}p_{\mathcal{O}} \, g_{\Delta,l}(z,\bar z)\Big| \, \leq \, \mathcal{R}(z,\bar z)\,,
-\label{finalest4}
-\ee
-where
-\be
-\mathcal{R}(z,\bar z) \,\equiv \, \frac{(-\log|\rho(z)|)^{-4\Delta_\phi+1} \, 2^{4\Delta_\phi+1}}{\Gamma(4\Delta_\phi)} \frac{\Gamma(4\Delta_\phi, - \Delta_* \log |\rho(z)|)}{{(1-|\rho(z)|^2)}}\,.
-\label{finalest5a}
-\ee
+\end{equation}
 
 Imposing crossing symmetry to the 4-point function (\ref{4-point-function}) gives, in any number of dimensions, 
 \begin{align}
@@ -192,9 +182,9 @@ Imposing crossing symmetry to the 4-point function (\ref{4-point-function}) give
 \sum_{\Delta ,l } p_{\mathcal{O}} \, \mathcal{F}_{\mathcal{O}}(z, \bar z) \, = \, (z \bar z)^{\Delta_\phi} - ((1-z)(1-\bar z))^{\Delta_\phi} \, ,
 \end{align} 
 where
-\be
+\begin{equation}
 \mathcal{F}_{\mathcal{O}}(z, \bar z) \, \equiv \, ((1-z)(1-\bar z))^{\Delta_\phi} g_{\Delta,l}(z,\bar z)- (z \bar z)^{\Delta_\phi} g_{\Delta,l}(1-z,1-\bar z) \,.
-\ee
+\end{equation}
 
 
 \section{General Intuition of the MC bootstrap}
@@ -203,14 +193,22 @@ OPE coefficients, which should only be satisfied for physical conformal data.
 Since any numerical approach involves truncating the OPE up to a maximum
 dimension $\Delta^*$, it is important to estimate the remainder of the series in
 order to bound the amount by which \ref{bootstrapequation} might be violated in
-a given approximation. This was done by Rychkov et al 
-%choro mareador sobre el error
-%Escribir ecuación truncada
+a given approximation. This was done by Rychkov et al,
+who found the following error estimate holds (for $\Delta_*\gg 1$):
+\begin{equation}
+\Big|\sum_{(\Delta\geq \Delta_*),l}p_{\mathcal{O}} \, g_{\Delta,l}(z,\bar z)\Big| \, \leq \, \mathcal{R}(z,\bar z)\,,
+\label{finalest4}
+\end{equation}
+where
+\begin{equation}
+\mathcal{R}(z,\bar z) \,\equiv \, \frac{(-\log|\rho(z)|)^{-4\Delta_\phi+1} \, 2^{4\Delta_\phi+1}}{\Gamma(4\Delta_\phi)} \frac{\Gamma(4\Delta_\phi, - \Delta_* \log |\rho(z)|)}{{(1-|\rho(z)|^2)}}\,.
+\label{finalest5a}
+\end{equation}
 
 This motivates trying to find conformal data numerically using some sort of
 gradient descent. In this case, one can take the truncated 
 Bootstrap equations as a functional and minimize it with a Monte Carlo
-simulation.
+simulation. Concretely, one can rewrite the bootstrap equations as 
 
 This naive approach proved to be untractable in the early stages of the
 research, mostly because it became exponentially time consuming to look for more
