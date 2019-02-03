@@ -1,0 +1,240 @@
+\documentclass[letterpaper]{article}
+
+
+\usepackage{hyperref}
+\usepackage{feynmp-auto}
+\usepackage{tikz-feynman}
+\usepackage{slashed}
+\usepackage[vcentermath]{youngtab}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{mathtools}
+\usepackage[english]{babel}
+\usepackage{url}
+\usepackage{enumerate}
+\usepackage{booktabs}
+\usepackage{graphicx}
+\usepackage{xcolor, colortbl}
+\usepackage{longtable}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{caption}
+\usepackage{multicol}
+\usepackage{fancyhdr}
+\usepackage{xspace}
+\usepackage{braket}
+\usepackage{rotating}
+\usepackage{amsmath}
+\usepackage{float}
+\usepackage{listings}
+\usepackage{color}
+\usepackage{tikz} 
+\usetikzlibrary{shapes,arrows,positioning,automata,backgrounds,calc,er,patterns}
+\usepackage{tikz-feynman}
+\tikzfeynmanset{compat=1.0.0}
+
+%
+\usepackage[a4paper, left=1.5cm, right=1.5cm, top=2cm, bottom=2cm]{geometry}
+\setlength{\parskip}{\baselineskip}
+\date{\today}
+
+\begin{document}
+
+\title{
+  Monte Carlo Bootstrap: current developments.
+  }
+\author{
+  A. Laio, U. Luviano, M. Serone
+}
+
+%%Cuántica
+\newcommand{\inty}{\int_{-\infty}^{\infty}} 
+\newcommand{\Lag}{\mathcal{L}} 
+\newcommand{\Id}{\mathbb{I}} 
+\newcommand{\Tr}{\mathrm{Tr}} 
+\newcommand{\tr}{\mathrm{tr}} 
+\newcommand{\Det}{\mathrm{Det}} 
+\newcommand{\gauge}{\mathcal{A}} 
+\newcommand{\Lac}{\ensuremath{\mathbf{\hat{L}^2}}} 
+\newcommand{\La}{\ensuremath{\mathbf{\hat{L}}}} 
+\newcommand{\Ham}{\ensuremath{\hat{H}}} 
+\renewcommand{\a}{\ensuremath{(e_1)}}
+\renewcommand{\b}{\ensuremath{(e_2)}}
+\renewcommand{\c}{\ensuremath{(e_3)}}
+\newcommand\cd{\mathrel{\stackrel{\makebox[0pt]{\mbox{\normalfont\tiny
+CD}}}{\longleftrightarrow}}}
+\newcommand{\tmop}[1]{\ensuremath{\operatorname{#1}}}
+\newcommand{\then}{\ensuremath{\Rightarrow}}
+\newcommand{\res}{\ensuremath{\mathrm{Res}}}
+\newcommand{\R}{\ensuremath{\mathbb{R}}}
+\newcommand{\integral}[1]{\ensuremath{\int_{a}^{b} #1 dt}}
+%%%From Marco's
+\def\UV{{\textsc{uv}}}
+\def\IR{{\textsc{ir}}}
+\def\gX{{g_\textsc{x}}}
+\def\gY{{g_\textsc{y}}}
+\def\dslash{\raisebox{1pt}{$\slash$} \hspace{-7pt} \partial}
+\def\pslash{\raisebox{1pt}{$\slash$} \hspace{-7pt} p}
+\def\qslash{\raisebox{1pt}{$\slash$} \hspace{-7pt} q}
+\def\Aslash{\hspace{3pt}\raisebox{1pt}{$\slash$} \hspace{-9pt} A}
+\def\Dslash{\hspace{3pt}\raisebox{1pt}{$\slash$} \hspace{-9pt} D}
+\def\Dslashn{\hspace{3pt}\raisebox{1pt}{$\slash$} \hspace{-7pt} D}
+\def\bea{\begin{eqnarray}} \def\eea{\end{eqnarray}}
+\def\be{\begin{equation}} \def\ee{\end{equation}} \def\nn{\nonumber}
+\def\a{& \hspace{-7pt}} \def\c{\hspace{-5pt}} \def\Z{{\bf Z}}
+\def\zb{\overline{z}} \def\ov{\overline} \def\I{1\hspace{-4pt}1}
+\def\ds{\displaystyle} \def\de{\partial} \def\deb{\ov{\partial}}
+\def\dsl{\partial\hspace{-6pt}/} \def\psl{p\hspace{-5pt}/}
+\def\taub{\bar \tau} \def\R{\mathcal R} \def\RR{   R}
+\def\mc{\mathcal}
+\def\ZZ{Z\hspace{-5pt}Z}
+\def\CC{   C}
+\def\b{\raisebox{14pt}{}\raisebox{-7pt}{}$\!\!$}
+\def\tl{\tilde}
+\def\Zeta{\ZZ}
+\def\al{{\alpha^\prime}}
+\def\hs{\hspace{10pt}}
+\def\thp{\theta^\prime}
+\def\thpt{\tilde\theta^\prime}
+\def\w{\omega}
+%\def\gg{{\bf g}}
+\def\hh{{\bf h}}
+\def\mut{\tilde \mu}
+%
+\newcommand{\Int}[2]{{\int}_{\hspace{-0.35cm}\begin{array}{c}\vspace{-0.35cm}
+\\{\scriptstyle #1}\end{array}}\hspace{-0.35cm} #2}
+\newcommand{\CInt}[2]{{\oint}_{\hspace{-0.35cm}\begin{array}{c}\vspace{-0.35cm}
+\\{\scriptstyle #1}\end{array}}\hspace{-0.05cm} #2}
+\newcommand{\diff}{\mathrm{d}}
+\newcommand{\SO}{\text{SO}}
+\newcommand{\SU}{\text{SU}}
+\newcommand{\U}{\text{U}}
+\newcommand{\G}{\mathcal{G}}
+
+\newcommand{\egamma}[1]{\Gamma\!\left(#1\right)}
+\newcommand{\rzeta}[1]{\zeta\!\left(#1\right)}
+\setlength\arraycolsep{2pt}
+
+\newcommand\tw[2]{
+ \Bigg[\hspace{-1pt}\raisebox{1pt}
+{$\begin{array}{c}
+ \displaystyle{#1} \\ \displaystyle{#2}
+ \end{array}$}
+ \hspace{-1pt}\Bigg]}
+\newcommand{\eqalign}[1]{\hspace{-10pt}\begin{array}{ll}#1\end{array}
+\hspace{-10pt}}
+
+\newcommand{\promille}{%
+  \relax\ifmmode\promillezeichen
+        \else\leavevmode\(\mathsurround=0pt\promillezeichen\)\fi}
+\newcommand{\promillezeichen}{%
+  \kern-.05em%
+  \raise.5ex\hbox{\the\scriptfont0 0}%
+  \kern-.15em/\kern-.15em%
+  \lower.25ex\hbox{\the\scriptfont0 00}}
+
+
+\newcommand{\Cr}{\star}
+
+\newcommand{\ol}{\overline}
+\newcommand{\wt}{\tilde}
+\newcommand{\bs}{\boldsymbol}
+\newcommand{\GR}{\mbox{\tiny $GR$ \normalsize}}
+\newcommand{\abs}[1]{ \left| #1\right|}
+
+%%%%%%%%%%%%%%%%%%%%
+\maketitle
+
+\section{Introduction}
+The Conformal Bootstrap offers a way to chart the space of acceptable CFTs. 
+
+There has recently been a great revival of interest in the conformal bootstrap program \cite{Ferrara:1973yt,Polyakov:1974gs} after ref.\cite{Rattazzi:2008pe} observed that 
+its applicability extends to Conformal Field Theories (CFTs) in $d>2$ dimensions. 
+Since ref.\cite{Rattazzi:2008pe}, considerable progress has been achieved in understanding CFTs in $d\geq 2$ dimensions, both numerically and analytically.
+Probably the most striking progress has been made in the numerical study of the 3D Ising model,
+where amazingly precise operator dimensions and OPE coefficients have been determined
+\cite{ElShowk:2012ht,El-Showk:2014dwa,Kos:2016ysd}.
+
+
+\section{Bootstrap Basics.}
+Consider the 4-point function of a scalar primary operator $\phi$ with scaling dimension $\Delta_\phi$: 
+\be
+\label{4-point-function}
+\langle \phi(x_1) \phi(x_2) \phi(x_3) \phi(x_4) \rangle \, = \, \frac{g(z,\bar z)}{x_{12}^{2\Delta_\phi}x_{34}^{2\Delta_\phi} } \,,
+\ee
+where $z$ and $\bar z$ are so called conformally-invariant cross-ratios made up of $x_{ij}\equiv x_i-x_j$.
+Applying the OPE to the operator pairs $\phi(x_1) \phi(x_2)$ and $\phi(x_3) \phi(x_4)$ in the 4-point function, one can write
+\be
+g(z,\bar z) = 1+\sum_{\Delta ,l } p_{\mathcal{O}} \, g_{\Delta,l}(z,\bar z) \,, 
+\label{CBExp}
+ \ee
+where the sum runs over all primary operators $\mathcal{O}$ that appear in the $\phi\times \phi$ OPE with  $\Delta$ and $l$ being respectively their dimension and spin. Notice that $l$ has to be even
+for identical scalars. For each primary, the sum over all its descendants is encoded in the conformal block function $g_{\Delta,l}(z,\bar z)$. Reflection positivity (i.e. unitarity) implies bounds on both the squared OPE coefficients $p_{\mathcal{O}}$
+and the scaling dimensions $\Delta$:
+\be
+p_{\mathcal{O}} >0 \;\; \forall \mathcal{O}\,,  \quad
+ \Delta \geq l+d-2 \;\; (l>0)\,, \quad \Delta \geq \frac{d-2}2 \;\; (l=0).
+\ee
+The sum over $\Delta$ (and hence over $l$) can be truncated up to a value $\Delta_*$. The following error estimate holds (for $\Delta_*\gg 1$):
+\be
+\Big|\sum_{(\Delta\geq \Delta_*),l}p_{\mathcal{O}} \, g_{\Delta,l}(z,\bar z)\Big| \, \leq \, \mathcal{R}(z,\bar z)\,,
+\label{finalest4}
+\ee
+where
+\be
+\mathcal{R}(z,\bar z) \,\equiv \, \frac{(-\log|\rho(z)|)^{-4\Delta_\phi+1} \, 2^{4\Delta_\phi+1}}{\Gamma(4\Delta_\phi)} \frac{\Gamma(4\Delta_\phi, - \Delta_* \log |\rho(z)|)}{{(1-|\rho(z)|^2)}}\,.
+\label{finalest5a}
+\ee
+
+Imposing crossing symmetry to the 4-point function (\ref{4-point-function}) gives, in any number of dimensions, 
+\begin{align}
+\label{bootstrapequation}
+\sum_{\Delta ,l } p_{\mathcal{O}} \, \mathcal{F}_{\mathcal{O}}(z, \bar z) \, = \, (z \bar z)^{\Delta_\phi} - ((1-z)(1-\bar z))^{\Delta_\phi} \, ,
+\end{align} 
+where
+\be
+\mathcal{F}_{\mathcal{O}}(z, \bar z) \, \equiv \, ((1-z)(1-\bar z))^{\Delta_\phi} g_{\Delta,l}(z,\bar z)- (z \bar z)^{\Delta_\phi} g_{\Delta,l}(1-z,1-\bar z) \,.
+\ee
+
+
+\section{General Intuition of the MC bootstrap}
+One can consider \ref{bootstrapequation} as a function of the spectrum and the
+OPE coefficients, which should only be satisfied for physical conformal data.
+Since any numerical approach involves truncating the OPE up to a maximum
+dimension $\Delta^*$, it is important to estimate the remainder of the series in
+order to bound the amount by which \ref{bootstrapequation} might be violated in
+a given approximation. This was done by Rychkov et al 
+%choro mareador sobre el error
+%Escribir ecuación truncada
+
+This motivates trying to find conformal data numerically using some sort of
+gradient descent. In this case, one can take the truncated 
+Bootstrap equations as a functional and minimize it with a Monte Carlo
+simulation.
+
+This naive approach proved to be untractable in the early stages of the
+research, mostly because it became exponentially time consuming to look for more
+operators. Thus, we decided to split the optimization in two steps. One that
+finds an approximate spectrum without worrying for the OPE coefficients, and
+then solving for the complete conformal data with a more refined Monte Carlo.
+The first step was motivated by Gliozzi's determinant bootstrap, which we review
+in the following section.
+
+\section{Review of Gliozzi's paper}
+yadda yadda matrix, solution
+
+\section{LogDet implementation}
+Given a putative spectrum, the determinant of the matrix
+\subsection{naive approach}
+\subsection{Cross smearing}
+\subsection{Recursive with check}
+
+\section{$\chi^2$ refinement}
+\subsection{cWLS as a way to determine OPEs}
+
+\section{Summary of results}
+\subsection{Free CFT in 4d}
+\subsection{GFT in 1d}
+\subsection{GFT in 4d}
+
+  \end{document}
