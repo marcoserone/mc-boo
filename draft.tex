@@ -225,7 +225,7 @@ where $l$ is bounded in turn by
   \ref{unit-bound}, and 
 \begin{equation}
 \label{error-bound}
-  \mathcal{E}(z,\bar z) \leq \mathcal{E}_{\mathrm{max}}(z,\bar z) \equiv
+  |\mathcal{E}(z,\bar z)| \leq \mathcal{E}_{\mathrm{max}}(z,\bar z) \equiv
   v^{\Delta_\phi}\mathcal{R}(z,\bar z)
   +
   u^{\Delta_\phi}\mathcal{R}(1-z,1-\bar z).
@@ -281,15 +281,59 @@ The first step was motivated by Gliozzi's determinant bootstrap, which we review
 in the following section.
 
 \section{Review of Gliozzi's paper}
-yadda yadda matrix, solution
+In 2013, Gliozzi realized that, for $N_z$ bigger than the number of operators
+one considered in the OPE, \ref{matrix-boo} represented an over-determined
+Linear System. Thus, in order for a solution (that is, a set of OPE coefficients
+satisfying crossing) to exist, each minor should vanish.
 
 \section{LogDet implementation}
+\subsection{naive approach}
 Given a putative spectrum, the determinant of \ref{matrix-op}
 should get closer to zero as we approach a physically sensible set of operator
-dimensions. Since the determinant
-\subsection{naive approach}
+dimensions. Since this quantity could range over many orders of magnitude, we
+decided to square it and then take the $\log$ of it. This proved to be
+numerically troubling, since the behaviour of the logarithm around $0$ is far
+from differentiable and the landscape was thus full of spurious minima out of
+which the Metropolis algorithm could not get out.
 \subsection{Cross smearing}
+In order to smooth this behaviour out, we implemented an empirical
+renormalization that consists in computing the value of the determinant at
+adjacent points to the main one. Thus
+\[
+\begin{aligned}
+  S({\Delta_i,l_i})& = \log\Det^2\mathcal{M}(\{\Delta_i,l_i\})\\
+  \to
+  S_{\mathrm{cross}}(\{\Delta_i,l_i\})  & =   \log\Det^2\mathcal{M}(\{\Delta_i,l_i\}) + \sum_i\left(
+  \log\Det^2\mathcal{M}(\{\Delta_i+\delta,l_i\})  +
+  \log\Det^2\mathcal{M}(\{\Delta_i-\delta,l_i\})  \right)
+\end{aligned}
+\]
+
+This action was much more efficient at finding the correct dimensions for the
+free theory, and numerical exploration showed that the basin of attraction for
+each given operator's dimension was very sharp, as long as the other ones were
+kept at the exact value. Small perturbations destroyed this basin rather
+quickly, and thus it was hard to get the MC routine to solve for a large number
+of operators  ($\sim 7$)at the same time.
+
 \subsection{Recursive with check}
+The next breakthrough in the routine came when we decided to start with few
+($\sim 4$) operators and add the next operators one by one. To avoid spoiling
+the previous solution, only the new operator was varied for a given number of
+steps before we allowed the whole spectrum to be optimized. This gave a very
+efficient routine with a large radius of convergence.
+
+This recursive step was further improved by using
+\ref{error-bound} to bound \ref{matrix-boo} as 
+\begin{equation}
+  | \mathcal{M}\cdot \vec{\rho}-\vec{\sigma} | < \vec{\epsilon_{\mathrm{max}}}.
+  \label{cross-check}
+\end{equation}
+Then, the result of each end state of the MC could be tested to see if it
+satisfied Crossing Symmetry with the precision correspoinding to the $\Delta^*$
+considered. Otherwise, it changed the seed of the pseudorandom generator and
+started again the MC.
+
 
 \section{$\chi^2$ refinement}
 \subsection{cWLS as a way to determine OPEs}
@@ -298,5 +342,70 @@ dimensions. Since the determinant
 \subsection{Free CFT in 4d}
 \subsection{GFT in 1d}
 \subsection{GFT in 4d}
+
+\begin{thebibliography}{10}
+
+ 
+ \bibitem{Ferrara:1973yt}
+  S.~Ferrara, A.~F.~Grillo and R.~Gatto,
+  ``Tensor representations of conformal algebra and conformally covariant operator product expansion,''
+  Annals Phys.\  {\bf 76} (1973) 161.
+  %%CITATION = APNYA,76,161;%%
+  %88 citations counted in INSPIRE as of 18 Nov 2014
+  %  \bibitem{Ferrara:1973eg}
+  
+  \bibitem{Polyakov:1974gs}
+  A.~M.~Polyakov,
+  ``Nonhamiltonian approach to conformal quantum field theory,''
+  Zh.\ Eksp.\ Teor.\ Fiz.\  {\bf 66} (1974) 23.
+  %%CITATION = ZETFA,66,23;%%
+  %67 citations counted in INSPIRE as of 10 Jun 2014
+
+
+\bibitem{Rattazzi:2008pe}
+  R.~Rattazzi, V.~S.~Rychkov, E.~Tonni and A.~Vichi,
+  ``Bounding scalar operator dimensions in 4D CFT,''
+  JHEP {\bf 0812} (2008) 031
+  [arXiv:0807.0004 [hep-th]].
+  %%CITATION = ARXIV:0807.0004;%%
+  %171 citations counted in INSPIRE as of 13 May 2015
+
+ \bibitem{ElShowk:2012ht}
+  S.~El-Showk, M.~F.~Paulos, D.~Poland, S.~Rychkov, D.~Simmons-Duffin and A.~Vichi,
+  ``Solving the 3D Ising Model with the Conformal Bootstrap,''
+  Phys.\ Rev.\ D {\bf 86} (2012) 025022
+  doi:10.1103/PhysRevD.86.025022
+  [arXiv:1203.6064 [hep-th]].
+  %%CITATION = doi:10.1103/PhysRevD.86.025022;%%
+  %156 citations counted in INSPIRE as of 13 Apr 2016
+
+    \bibitem{El-Showk:2014dwa}
+  S.~El-Showk, M.~F.~Paulos, D.~Poland, S.~Rychkov, D.~Simmons-Duffin and A.~Vichi,
+  ``Solving the 3d Ising Model with the Conformal Bootstrap II. c-Minimization and Precise Critical Exponents,''
+  J.\ Stat.\ Phys.\  {\bf 157} (2014) 869
+  doi:10.1007/s10955-014-1042-7
+  [arXiv:1403.4545 [hep-th]].
+  %%CITATION = doi:10.1007/s10955-014-1042-7;%%
+  %95 citations counted in INSPIRE as of 13 Apr 2016
+  
+   \bibitem{Kos:2016ysd}
+  F.~Kos, D.~Poland, D.~Simmons-Duffin and A.~Vichi,
+  ``Precision Islands in the Ising and $O(n)$ Models,''
+  arXiv:1603.04436 [hep-th].
+  %%CITATION = ARXIV:1603.04436;%%
+  %3 citations counted in INSPIRE as of 13 Apr 2016 
+  
+  \bibitem{Kos:2013tga}
+  F.~Kos, D.~Poland and D.~Simmons-Duffin,
+  ``Bootstrapping the $O(n)$ vector models,''
+  JHEP {\bf 1406} (2014) 091
+  doi:10.1007/JHEP06(2014)091
+  [arXiv:1307.6856 [hep-th]].
+  %%CITATION = doi:10.1007/JHEP06(2014)091;%%
+  %85 citations counted in INSPIRE as of 13 Apr 2016
+
+
+
+\end{thebibliography}
 
   \end{document}
