@@ -132,7 +132,7 @@ $MinPrecision=prec;
           \[CapitalDelta]LOld=\[CapitalDelta]L;
           QQold=QQ0; 
           resultsOld=results; 
-
+(*This If avoids varying operators which still don't enter the OPE*)
   If[it==1,dimToVary = RandomInteger[{1,lmax}],dimToVary = RandomInteger[{1,lmax-nzeros}]];
        (*Shift one dimension by a random amount*)       
           \[CapitalDelta]L[[dimToVary,1]] = \[CapitalDelta]L[[dimToVary,1]]+ RandomVariate[NormalDistribution[0, sigmamods[[dimToVary]] \[CapitalDelta]L[[dimToVary,1]] sigmaMC]];
@@ -561,25 +561,16 @@ ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,500,88,1000+50tol,ni
 ParallelTable[metroReturnAvgChi2[100,3000,200,10^(-i),deltamc[[2]],10+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
 
 
-ParallelTable[metroReturnAvgChi2[100,3000,200,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
+Table[metroReturnAvgChi2[100,1500,200,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
 
 
-ParallelTable[metroReturnAvgChi2[100,3000,1000,10^(-i),deltamc[[2]],10+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
+Table[metroReturnAvgChi2[100,1500,1000,10^(-i),deltamc[[2]],10+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
 
 
-ParallelTable[metroReturnAvgChi2[100,3000,1000,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
+Table[metroReturnAvgChi2[100,1500,1000,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
 
 
-metroReturnAvgChi2[88,5000,500,1/100,deltamc[[2]],3421,4,"adaptative-test",1/10,1/100]
-
-
-metroReturnAvgChi2[88,1100,500,1/100,deltamc[[2]],3421,4,"whutup",1/10,1/100]
-
-
-
-
-
-
+metroReturnAvgChi2[100,1500,200,10^(-4),deltamc[[3]],10+4,4,"delta3",1/10,10^(-4)]
 
 
 

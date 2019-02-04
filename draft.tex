@@ -31,6 +31,8 @@
 \usepackage{tikz} 
 \usetikzlibrary{shapes,arrows,positioning,automata,backgrounds,calc,er,patterns}
 \usepackage{tikz-feynman}
+
+\numberwithin{equation}{section}
 \tikzfeynmanset{compat=1.0.0}
 
 %
@@ -174,6 +176,7 @@ and the scaling dimensions $\Delta$:
 \begin{equation}
 p_{\mathcal{O}} >0 \;\; \forall \mathcal{O}\,,  \quad
  \Delta \geq l+d-2 \;\; (l>0)\,, \quad \Delta \geq \frac{d-2}2 \;\; (l=0).
+  \label{unit-bound}
 \end{equation}
 
 Imposing crossing symmetry to the 4-point function (\ref{4-point-function}) gives, in any number of dimensions, 
@@ -207,13 +210,72 @@ where
 
 This motivates trying to find conformal data numerically using some sort of
 gradient descent. In this case, one can take the truncated 
-Bootstrap equations as a functional and minimize it with a Monte Carlo
+Bootstrap equations as a function of a discrete spectrum and OPE coefficients 
+and minimize it with a Monte Carlo
 simulation. Concretely, one can rewrite the bootstrap equations as 
 
+\begin{equation}
+\label{bootstrapequation-bound}
+\sum_{\Delta<\Delta^* ,l } p_{\mathcal{\Delta},l} \,
+  \mathcal{F}_{\mathcal{O}}(z, \bar z) \, = \, (z \bar z)^{\Delta_\phi} -
+  ((1-z)(1-\bar z))^{\Delta_\phi} + \mathcal{E}(z,\bar z),
+\end{equation} 
+
+where $l$ is bounded in turn by
+  \ref{unit-bound}, and 
+\begin{equation}
+\label{error-bound}
+  \mathcal{E}(z,\bar z) \leq \mathcal{E}_{\mathrm{max}}(z,\bar z) \equiv
+  v^{\Delta_\phi}\mathcal{R}(z,\bar z)
+  +
+  u^{\Delta_\phi}\mathcal{R}(1-z,1-\bar z).
+\end{equation} 
+
+Since these equations have to be satisfied everywhere outside the branch cut at
+\([1,\infty)\), one can take a finite set of points $\{z_i\}_{i=1}^{N_z}$ and
+write \ref{bootstrapequation-bound} as
+\begin{equation}
+  \mathcal{M}\cdot \vec{\rho} = \vec{\sigma} + \vec{\epsilon}
+\label{matrix-boo}
+\end{equation}
+
+where 
+\begin{equation}
+\vec{\sigma} \, \equiv \, \left( \begin{matrix}
+                      |z_1|^{2\Delta_\phi} \, - \, |1-z_1|^{2 \Delta_\phi}\\  |z_2|^{2\Delta_\phi} \, - \, |1-z_2|^{2 \Delta_\phi} \\ \vdots
+                     \end{matrix} \right) 
+                     \quad \, \text{and} \, \quad 
+                      \vec{\epsilon} \, \equiv \, 
+                          \left( \begin{matrix}
+                                  \mathcal{E}(z_1,\bar z_1,\Delta_*,\Delta_\phi) \\
+                                  \mathcal{E}(z_2,\bar z_2,\Delta_*,\Delta_\phi) \\
+                                  \vdots
+                                 \end{matrix} \right)  \, .
+\end{equation}
+
+and
+\begin{equation}
+\mathcal{M} \, \equiv \, \left( \begin{matrix}
+  \mathcal{F}_{\Delta_1,l_1}(z_1, \bar z_1) &\mathcal{F}_{\Delta_2,l_2}(z_1, \bar
+  z_1) & \cdots \\
+  \mathcal{F}_{\Delta_1,l_1}(z_2, \bar z_2) &\mathcal{F}_{\Delta_2,l_2}(z_2, \bar
+  z_2) & \cdots \\
+  \vdots  & \vdots &\ddots\\
+                     \end{matrix} \right) .
+                     \label{matrix-op}
+\end{equation}
+
+
+
+The straightforward path is to define a cost function
+\[
+  C\sim | \mathcal{M}\cdot \vec{\rho} - \vec{\sigma} |
+\]
+and minimize it stochastically.
 This naive approach proved to be untractable in the early stages of the
 research, mostly because it became exponentially time consuming to look for more
 operators. Thus, we decided to split the optimization in two steps. One that
-finds an approximate spectrum without worrying for the OPE coefficients, and
+finds an approximate spectrum without worrying about the OPE coefficients, and
 then solving for the complete conformal data with a more refined Monte Carlo.
 The first step was motivated by Gliozzi's determinant bootstrap, which we review
 in the following section.
@@ -222,7 +284,9 @@ in the following section.
 yadda yadda matrix, solution
 
 \section{LogDet implementation}
-Given a putative spectrum, the determinant of the matrix
+Given a putative spectrum, the determinant of \ref{matrix-op}
+should get closer to zero as we approach a physically sensible set of operator
+dimensions. Since the determinant
 \subsection{naive approach}
 \subsection{Cross smearing}
 \subsection{Recursive with check}
