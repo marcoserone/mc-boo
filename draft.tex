@@ -326,7 +326,7 @@ efficient routine with a large radius of convergence.
 This recursive step was further improved by using
 \ref{error-bound} to bound \ref{matrix-boo} as 
 \begin{equation}
-  | \mathcal{M}\cdot \vec{\rho}-\vec{\sigma} | < \vec{\epsilon_{\mathrm{max}}}.
+  | \mathcal{M}\cdot \vec{\rho}-\vec{\sigma} | < \vec{\epsilon}_{\mathrm{max}}.
   \label{cross-check}
 \end{equation}
 Then, the result of each end state of the MC could be tested to see if it
@@ -337,6 +337,9 @@ started again the MC.
 
 \section{$\chi^2$ refinement}
 \subsection{cWLS as a way to determine OPEs}
+Since the dependence of \ref{cross-check} on $\vec{\rho}$ is linear, for
+$N_z>N_{Op}$ it is possible to find the set of OPE coefficients that best
+satisfy crossing via the Weighted Least Squares method. 
 
 \section{Summary of results}
 \subsection{Free CFT in 4d}
