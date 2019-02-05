@@ -129,7 +129,8 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
     (*Monte Carlo Iteration*)
 TotD =   Reap[ Do[
 $MinPrecision=prec;
-If[fracvio<tol, seed=seed+1;  zsample = Sample[Nz,sigmaz,seed]; 
+If[fracvio<tol, Print["resetting seed"]; 
+seed=seed+1;  zsample = Sample[Nz,sigmaz,seed]; 
 Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
         ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
@@ -569,19 +570,7 @@ nits=5{500,100,100,100,100,100,100,100,100};
 ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,500,88,1000+50tol,nits,"tol="<>ToString[tol],1/10,tol/10],{tol,1,9}]
 
 
-ParallelTable[metroReturnAvgChi2[100,200,200,10^(-i),deltamc[[2]],10+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
-
-
-ParallelTable[metroReturnAvgChi2[100,1500,200,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
-
-
-ParallelTable[metroReturnAvgChi2[100,1500,1000,10^(-i),deltamc[[2]],10+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
-
-
-ParallelTable[metroReturnAvgChi2[100,1500,1000,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
-
-
-metroReturnAvgChi2[100,1000,200,10^(-4),deltamc[[3]],10+4,4,"delta3",1/10,10^(-4)]
+ParallelTable[metroReturnAvgChi2[100,1000,200,10^(-4),deltamc[[3]],10+4,4,"delta3",1/10,10^(-4),5 i],{i,1,4}]
 
 
 
