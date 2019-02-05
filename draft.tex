@@ -193,7 +193,7 @@ where
 \section{General Intuition of the MC bootstrap}
 One can consider \ref{bootstrapequation} as a function of the spectrum and the
 OPE coefficients, which should only be satisfied for physical conformal data.
-Since any numerical approach involves truncating the OPE up to a maximum
+Since almost any numerical approach involves truncating the OPE up to a maximum
 dimension $\Delta^*$, it is important to estimate the remainder of the series in
 order to bound the amount by which \ref{bootstrapequation} might be violated in
 a given approximation. This was done by Rychkov et al,
@@ -271,7 +271,8 @@ The straightforward path is to define a cost function
 \[
   C\sim | \mathcal{M}\cdot \vec{\rho} - \vec{\sigma} |
 \]
-and minimize it stochastically.
+and minimize it stochastically\footnote{Should I add a section on Metropolis MC
+here?}.
 This naive approach proved to be untractable in the early stages of the
 research, mostly because it became exponentially time consuming to look for more
 operators. Thus, we decided to split the optimization in two steps. One that
@@ -292,9 +293,9 @@ Given a putative spectrum, the determinant of \ref{matrix-op}
 should get closer to zero as we approach a physically sensible set of operator
 dimensions. Since this quantity could range over many orders of magnitude, we
 decided to square it and then take the $\log$ of it. This proved to be
-numerically troubling, since the behaviour of the logarithm around $0$ is far
-from differentiable and the landscape was thus full of spurious minima out of
+numerically troubling due to the behaviour of the logarithm around $0$  and the landscape was thus full of spurious minima out of
 which the Metropolis algorithm could not get out.
+
 \subsection{Cross smearing}
 In order to smooth this behaviour out, we implemented an empirical
 renormalization that consists in computing the value of the determinant at
@@ -304,8 +305,8 @@ adjacent points to the main one. Thus
   S({\Delta_i,l_i})& = \log\Det^2\mathcal{M}(\{\Delta_i,l_i\})\\
   \to
   S_{\mathrm{cross}}(\{\Delta_i,l_i\})  & =   \log\Det^2\mathcal{M}(\{\Delta_i,l_i\}) + \sum_i\left(
-  \log\Det^2\mathcal{M}(\{\Delta_i+\delta,l_i\})  +
-  \log\Det^2\mathcal{M}(\{\Delta_i-\delta,l_i\})  \right)
+  \log\Det^2\mathcal{M}(\cdots,\{\Delta_i+\delta,l_i\},\cdots)  +
+  \log\Det^2\mathcal{M}(\cdots,\{\Delta_i-\delta,l_i\},\cdots)  \right)
 \end{aligned}
 \]
 
@@ -314,13 +315,14 @@ free theory, and numerical exploration showed that the basin of attraction for
 each given operator's dimension was very sharp, as long as the other ones were
 kept at the exact value. Small perturbations destroyed this basin rather
 quickly, and thus it was hard to get the MC routine to solve for a large number
-of operators  ($\sim 7$)at the same time.
+of operators  ($\sim 7$) at the same time.
 
 \subsection{Recursive with check}
 \label{rec-check}
 
 The next breakthrough in the routine came when we decided to start with few
-($\sim 4$) operators and add the next operators one by one. To avoid spoiling
+($\sim 4$) operators, find the operator dimensions which minimized the 
+action and then add the next operators one by one. To avoid spoiling
 the previous solution, only the new operator was varied for a given number of
 steps before we allowed the whole spectrum to be optimized. This gave a very
 efficient routine with a large radius of convergence.
@@ -338,14 +340,17 @@ started again the MC.
 
 
 \section{$\chi^2$ refinement}
-\subsection{cWLS as a way to determine OPEs}
+\subsection{cWLS as a way to determine the OPE coefficients}
 Since the dependence of \ref{cross-check} on $\vec{\rho}$ is linear, for
 $N_z>N_{Op}$ it is possible to find the set of OPE coefficients that best
 satisfy crossing via the Weighted Least Squares method\footnote{Should we add a
-reference here, other than Wikipedia?}. For a generic spectrum
+reference here, other than Wikipedia?}. 
+For a generic spectrum
 obtained via the method described in section \ref{rec-check}, this naive set of OPE
 coefficients will have some negative components, which stems from the
-fact that our spectrum is only approximate. Since the error estimate depends
+fact that our spectrum is only approximate. Since the error estimate
+\ref{finalestimate5a}
+depends
 crucially on the positivity of the OPE coefficients, we need to find the
 solution that minimizes \ref{cross-check} and has all entries non-negative. This
 is attained by setting the first negative OPE coefficient (from back to forth,
