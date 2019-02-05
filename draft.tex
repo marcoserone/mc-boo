@@ -196,7 +196,7 @@ OPE coefficients, which should only be satisfied for physical conformal data.
 Since almost any numerical approach involves truncating the OPE up to a maximum
 dimension $\Delta^*$, it is important to estimate the remainder of the series in
 order to bound the amount by which \ref{bootstrapequation} might be violated in
-a given approximation. This was done by Rychkov et al,
+a given approximation. This was done by \cite{Pappadopulo:2012jk},
 who found the following error estimate holds (for $\Delta_*\gg 1$):
 \begin{equation}
 \Big|\sum_{(\Delta\geq \Delta_*),l}p_{\mathcal{O}} \, g_{\Delta,l}(z,\bar z)\Big| \, \leq \, \mathcal{R}(z,\bar z)\,,
@@ -269,21 +269,21 @@ and
 
 The straightforward path is to define a cost function
 \[
-  C\sim | \mathcal{M}\cdot \vec{\rho} - \vec{\sigma} |
+  C(\Delta_i,\vec\rho)\sim | \mathcal{M}(\Delta_i)\cdot \vec{\rho} - \vec{\sigma} |
 \]
-and minimize it stochastically\footnote{Should I add a section on Metropolis MC
+and minimize it stochastically over the space of $\{\Delta_i,\vec\rho\}$ \footnote{Should I add a section on Metropolis MC
 here?}.
 This naive approach proved to be untractable in the early stages of the
 research, mostly because it became exponentially time consuming to look for more
-operators. Thus, we decided to split the optimization in two steps. One that
-finds an approximate spectrum without worrying about the OPE coefficients, and
-then solving for the complete conformal data with a more refined Monte Carlo.
+operators. Thus, we decided to split the optimization into two steps. First, we
+find an approximate spectrum without worrying about the OPE coefficients, and
+then solve for the complete conformal data with a more refined Monte Carlo.
 The first step was motivated by Gliozzi's determinant bootstrap, which we review
 in the following section.
 
 \section{Review of Gliozzi's paper}
-In 2013, Gliozzi realized that, for $N_z$ bigger than the number of operators
-one considered in the OPE, \ref{matrix-boo} represented an over-determined
+In 2013, \cite{Gliozzi:2013ysa} realized that, for $N_z$ bigger than the number of operators
+one considered in the OPE ($N_{Op}$), \ref{matrix-boo} represented an over-determined
 Linear System. Thus, in order for a solution (that is, a set of OPE coefficients
 satisfying crossing) to exist, each minor should vanish.
 
@@ -302,7 +302,7 @@ renormalization that consists in computing the value of the determinant at
 adjacent points to the main one. Thus
 \[
 \begin{aligned}
-  S({\Delta_i,l_i})& = \log\Det^2\mathcal{M}(\{\Delta_i,l_i\})\\
+  S(\{\Delta_i,l_i\})& = \log\Det^2\mathcal{M}(\{\Delta_i,l_i\})\\
   \to
   S_{\mathrm{cross}}(\{\Delta_i,l_i\})  & =   \log\Det^2\mathcal{M}(\{\Delta_i,l_i\}) + \sum_i\left(
   \log\Det^2\mathcal{M}(\cdots,\{\Delta_i+\delta,l_i\},\cdots)  +
@@ -330,9 +330,11 @@ efficient routine with a large radius of convergence.
 This recursive step was further improved by using
 \ref{error-bound} to bound \ref{matrix-boo} as 
 \begin{equation}
-  | \mathcal{M}\cdot \vec{\rho}-\vec{\sigma} | < \vec{\epsilon}_{\mathrm{max}}.
+  | \mathcal{M}\cdot \vec{\rho}-\vec{\sigma} | < \vec{\epsilon}_{\mathrm{max}},
   \label{cross-check}
 \end{equation}
+where $\vec \epsilon _{\mathrm{max}}$ is just $\vec \epsilon$ under the
+substitution $\mathcal{E}(z,\bar z; \Delta^*)\to\mathcal{E}_{\mathrm{max}}(z,\bar z; \Delta^*)$
 Then, the result of each end state of the MC could be tested to see if it
 satisfied Crossing Symmetry with the precision correspoinding to the $\Delta^*$
 considered. Otherwise, it changed the seed of the pseudorandom generator and
@@ -349,7 +351,7 @@ For a generic spectrum
 obtained via the method described in section \ref{rec-check}, this naive set of OPE
 coefficients will have some negative components, which stems from the
 fact that our spectrum is only approximate. Since the error estimate
-\ref{finalestimate5a}
+\label{finalest4}
 depends
 crucially on the positivity of the OPE coefficients, we need to find the
 solution that minimizes \ref{cross-check} and has all entries non-negative. This
@@ -435,6 +437,25 @@ routine.
   %%CITATION = doi:10.1007/JHEP06(2014)091;%%
   %85 citations counted in INSPIRE as of 13 Apr 2016
 
+%\cite{Gliozzi:2013ysa}
+\bibitem{Gliozzi:2013ysa}
+  F.~Gliozzi,
+  ``More constraining conformal bootstrap,''
+  Phys.\ Rev.\ Lett.\  {\bf 111} (2013) 161602
+  doi:10.1103/PhysRevLett.111.161602
+  [arXiv:1307.3111 [hep-th]].
+  %%CITATION = doi:10.1103/PhysRevLett.111.161602;%%
+  %101 citations counted in INSPIRE as of 05 Feb 2019
+
+  %\cite{Pappadopulo:2012jk}
+\bibitem{Pappadopulo:2012jk}
+  D.~Pappadopulo, S.~Rychkov, J.~Espin and R.~Rattazzi,
+  ``OPE Convergence in Conformal Field Theory,''
+  Phys.\ Rev.\ D {\bf 86} (2012) 105043
+  doi:10.1103/PhysRevD.86.105043
+  [arXiv:1208.6449 [hep-th]].
+  %%CITATION = doi:10.1103/PhysRevD.86.105043;%%
+  %152 citations counted in INSPIRE as of 05 Feb 2019
 
 
 \end{thebibliography}
