@@ -193,7 +193,7 @@ MetroGoFixedSelectiveDirChi2[1,\[CapitalDelta]L,Nz,nit,prec,\[Beta],seed,sigmaMC
 data= Get["Res-chi_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"Nz="<>ToString[Nz]<>"id="<>idtag<>".txt"];
 Export["zoom-Plot-chi_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"Nz="<>ToString[Nz]<>"id="<>idtag<>".pdf",ListPlot[Table[data[[All,2]][[All,i]]-2i+1,{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{{0,nit},{9/10,11/10}},PlotLegends->\[CapitalDelta]L[[;;,2]],PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
 (*{Mean[data[[nit-100;;nit,2]]],StandardDeviation[data[[nit-100;;nit,2]]],Mean[data[[nit-100;;nit,3]]],StandardDeviation[data[[nit-100;;nit,3]]]}*)
-Return[{data[[nit-100;;nit,3]]}];
+Return[{data[[nit-100;;nit,2]]//Mean,data[[nit-100;;nit,3]]//Mean}];
 ];
 
 checkMetroWeighted[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
@@ -559,16 +559,16 @@ nits=5{500,100,100,100,100,100,100,100,100};
 ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,500,88,1000+50tol,nits,"tol="<>ToString[tol],1/10,tol/10],{tol,1,9}]
 
 
-ParallelTable[metroReturnAvgChi2[100,3000,200,10^(-i),deltamc[[2]],10+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
+ParallelTable[metroReturnAvgChi2[100,1500,200,10^(-i),deltamc[[2]],10+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
 
 
-Table[metroReturnAvgChi2[100,1500,200,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
+ParallelTable[metroReturnAvgChi2[100,1500,200,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
 
 
-Table[metroReturnAvgChi2[100,1500,1000,10^(-i),deltamc[[2]],10+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
+ParallelTable[metroReturnAvgChi2[100,1500,1000,10^(-i),deltamc[[2]],10+i,4,"delta2",1/10,10^(-i)],{i,3,4}]
 
 
-Table[metroReturnAvgChi2[100,1500,1000,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
+ParallelTable[metroReturnAvgChi2[100,1500,1000,10^(-i),deltamc[[3]],10+i,4,"delta3",1/10,10^(-i)],{i,3,4}]
 
 
 aaa[[1,All,1;;7]]//StandardDeviation
