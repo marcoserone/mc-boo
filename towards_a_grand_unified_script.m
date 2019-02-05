@@ -570,7 +570,7 @@ nits=5{500,100,100,100,100,100,100,100,100};
 ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,500,88,1000+50tol,nits,"tol="<>ToString[tol],1/10,tol/10],{tol,1,9}]
 
 
-ParallelTable[metroReturnAvgChi2[100,1000,200,10^(-4),deltamc[[3]],10+4,4,"delta3",1/10,10^(-4),5 i],{i,1,4}]
+ParallelTable[metroReturnAvgChi2[100,1000,200,10^(-4),deltamc[[3]],10+4,4,"delta3",1/10,10^(-4),5i /100 ],{i,1,4}]
 
 
 
