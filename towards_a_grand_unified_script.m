@@ -260,12 +260,11 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
         ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
-errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],1],{i,1,Nz}];
 
 nzeros=Count[results[[1]],0];
 
-errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]]-2 nzeros,zsample[[i]],1],{i,1,Nz}];
-res=(results[[1]].QQ0-Idsample)errSample;
+errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]](*-2 nzeros*),zsample[[i]],1],{i,1,Nz}];
+res=(results[[1]].QQ0-Idsample)/errSample;
 Export["histogram-res-dist.pdf",Histogram[res,Round[Nz/50]]];
 finalcheck=Abs[res]<1//Thread;
 Return[{results,Count[finalcheck,True]/Nz, nzeros}];
@@ -579,7 +578,7 @@ ParallelTable[metroReturnAvgChi2[100,1000,200,10^(-4),deltamc[[2]],10+10 i,4,"To
 
 
 \[CapitalDelta]L={{3,0},{5,2},{7,4},{9,6},{11,8},{13,10},{15,12},{17,14},{19,16}};
-ParallelTable[metroReturnAvgChi2[100,3000,200,10^(-i),\[CapitalDelta]L,10+i,4,"delta3",1/10,10^(-i)],{i,1,4}]
+ParallelTable[metroReturnAvgChi2[100,3000,200,10^(-i),\[CapitalDelta]L,10+i,4,"bad-delta",1/10,10^(-i),0],{i,1,2}]
 
 
 ccheckMetroWeightedBis[1,\[CapitalDelta]L,100,123,100,1/10]
@@ -595,14 +594,14 @@ SetOptions[{RandomReal,RandomVariate},WorkingPrecision->100];
 ultralowsigma=Table[
 \[CapitalDelta]L=deltaFree[9];
 SeedRandom[i];
-a=RandomVariate[NormalDistribution[0,10^(-6)],9];
+a=RandomVariate[NormalDistribution[0,10^(-8)],9];
 \[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] + a;
 ccheckMetroWeightedBis[1,\[CapitalDelta]L,100,1,100,1/10],
 {i,1,10}];
 ultrahighsigma=Table[
 \[CapitalDelta]L=deltaFree[9];
 SeedRandom[i];
-a=RandomVariate[NormalDistribution[0,10^(-3)],9];
+a=RandomVariate[NormalDistribution[0,10^(-7)],9];
 \[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] + a;
 ccheckMetroWeightedBis[1,\[CapitalDelta]L,100,1,100,1/10],
 {i,1,10}];
@@ -611,8 +610,11 @@ ccheckMetroWeightedBis[1,\[CapitalDelta]L,100,1,100,1/10],
 
 
 
-lowsigma[[;;,3]]//Mean//N
-highsigma[[;;,3]]//Mean//N
+ultralowsigma[[;;,3]]//Mean//N
+ultrahighsigma[[;;,3]]//Mean//N
+
+
+
 
 
 
