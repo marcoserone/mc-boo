@@ -109,7 +109,7 @@ $MinPrecision=3;
 (*MC routine-Chi2*)
 MetroGoFixedSelectiveDirChi2[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,Nz_,Ndit_,prec_,betad_,seed0_,sigmaMC_,dcross_,lmax_,idTag_,sigmaz_,tol_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample,  PP0, PP1, lr, nr, Errvect, Factor, Factor0, seed=seed0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
-    IdsampleEx,zOPE,QQOPE,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,resultsOld,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,errSample,results,nzeros=Length[\[CapitalDelta]LOriginal],fracvio=100,nzerosnew,fracvionew,res,sigmamods=ConstantArray[1,Length[\[CapitalDelta]LOriginal]]}, 
+    IdsampleEx,zOPE,QQOPE,converge=False,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,resultsOld,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,errSample,results,nzeros=Length[\[CapitalDelta]LOriginal],fracvio=100,nzerosnew,fracvionew,res,sigmamods=ConstantArray[1,Length[\[CapitalDelta]LOriginal]]}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate},WorkingPrecision->prec];
 $MaxPrecision=prec;
@@ -129,7 +129,9 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
     (*Monte Carlo Iteration*)
 TotD =   Reap[ Do[
 $MinPrecision=prec;
-If[fracvio<tol, Print["resetting seed"]; 
+If[fracvio<tol, 
+If[converge,Print["Convergence!"];Break[],
+Print["resetting seed"]; 
 seed=seed+1;  zsample = Sample[Nz,sigmaz,seed]; 
 Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
         ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
@@ -139,7 +141,7 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
      
-          errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],0],{i,1,Nz}];];
+          errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],0],{i,1,Nz}];converge=True],converge=False];
           \[CapitalDelta]LOld=\[CapitalDelta]L;
           QQold=QQ0; 
           resultsOld=results; 
@@ -263,10 +265,10 @@ errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]L
 nzeros=Count[results[[1]],0];
 
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]]-2 nzeros,zsample[[i]],1],{i,1,Nz}];
-res=results[[1]].QQ0-Idsample;
+res=(results[[1]].QQ0-Idsample)errSample;
 Export["histogram-res-dist.pdf",Histogram[res,Round[Nz/50]]];
 finalcheck=Abs[res]<1//Thread;
-Return[{results,Count[finalcheck,True]/Nz}];
+Return[{results,Count[finalcheck,True]/Nz, nzeros}];
 ];
 
 
@@ -570,7 +572,7 @@ nits=5{500,100,100,100,100,100,100,100,100};
 ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,500,88,1000+50tol,nits,"tol="<>ToString[tol],1/10,tol/10],{tol,1,9}]
 
 
-ParallelTable[metroReturnAvgChi2[100,1000,200,10^(-4),deltamc[[3]],10+4,4,"delta3",1/10,10^(-4),5i /100 ],{i,1,4}]
+ParallelTable[metroReturnAvgChi2[100,1000,200,10^(-4),deltamc[[2]],10+10 i,4,"Toltest",1/10,10^(-4),5i /100 ],{i,1,4}]
 
 
 
@@ -581,3 +583,36 @@ ParallelTable[metroReturnAvgChi2[100,3000,200,10^(-i),\[CapitalDelta]L,10+i,4,"d
 
 
 ccheckMetroWeightedBis[1,\[CapitalDelta]L,100,123,100,1/10]
+
+
+\[CapitalDelta]L=deltaFree[9];
+a=RandomVariate[NormalDistribution[0,10^(-4)],9];
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] + a;
+ccheckMetroWeightedBis[1,\[CapitalDelta]L,100,1,100,1/10]
+
+
+SetOptions[{RandomReal,RandomVariate},WorkingPrecision->100];
+ultralowsigma=Table[
+\[CapitalDelta]L=deltaFree[9];
+SeedRandom[i];
+a=RandomVariate[NormalDistribution[0,10^(-6)],9];
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] + a;
+ccheckMetroWeightedBis[1,\[CapitalDelta]L,100,1,100,1/10],
+{i,1,10}];
+ultrahighsigma=Table[
+\[CapitalDelta]L=deltaFree[9];
+SeedRandom[i];
+a=RandomVariate[NormalDistribution[0,10^(-3)],9];
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] + a;
+ccheckMetroWeightedBis[1,\[CapitalDelta]L,100,1,100,1/10],
+{i,1,10}];
+
+
+
+
+
+lowsigma[[;;,3]]//Mean//N
+highsigma[[;;,3]]//Mean//N
+
+
+
