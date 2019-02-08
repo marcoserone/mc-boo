@@ -564,13 +564,13 @@ deltasimport=Import["~/mc-boo/gooddims"]//ToExpression;
 deltamc=Table[Transpose[{deltasimport[[i]],Range[0,16,2]}],{i,1,3}];
 
 
-\[CapitalDelta]L=deltaFree[9];
-a=RandomVariate[NormalDistribution[0,1/10],9];
-\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a);
 nits=15{300,100,100,100,100,100,100};
-i=8;
-\[Beta]list=(i/8){1/7,1/9,1/11,1/13,1/14,1/15};
-mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,100,88,35+20i,nits,"more-beta-4real"<>ToString[i],1/10,1/10,5]//Timing
+\[Beta]list={1/7,1/9,1/11,1/13,1/14,1/15};
+Table[
+\[CapitalDelta]L=deltaFree[9];
+a=RandomVariate[NormalDistribution[0,10^(-j/6 +1)],9];
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a);
+mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,100,88,35+205j,nits,"convergence-normalsigma"<>ToString[i],1/10,1/10,5]//Timing,{j,3,11}]
 
 
 \[CapitalDelta]L={{3,0},{5,2},{7,4},{9,6},{11,8},{13,10},{15,12},{17,14},{19,16}};
