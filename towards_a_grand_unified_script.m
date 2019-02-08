@@ -11,12 +11,13 @@ $MinPrecision=MachinePrecision;
  (*error estimates*)
     \[Rho]intErrorEstimateG[d_, DDs_, z_, \[Gamma]_] := (2^(\[Gamma] + 4*d)*\[Beta]^(\[Gamma] - 4*d)*Gamma[1 - \[Gamma] + 4*d, \[Beta]*DDs])/(Gamma[1 - \[Gamma] + 4*d]*(1 - r^2)^\[Gamma])/.  {r -> Abs[\[Rho]z[z]], \[Beta] -> -Log[Abs[\[Rho]z[z]]]}; 
       \[Rho]intErrorEstimateFt[d_, DDs_, z_, \[Gamma]_] := 
-     v^d*\[Rho]intErrorEstimateG[d, DDs, z, \[Gamma]] + u^d*\[Rho]intErrorEstimateG[d, DDs, 1 - z, \[Gamma]] /. {u -> z*Conjugate[z], v -> (1 - z)*(1 - Conjugate[z])}; 
+    extPrefac[d, 1-z] *\[Rho]intErrorEstimateG[d, DDs, z, \[Gamma]] + extPrefac[d, z] *\[Rho]intErrorEstimateG[d, DDs, 1 - z, \[Gamma]] ; 
      (*coefficients and prefactors*)
  extPrefac[\[CapitalDelta]\[Phi]_, x_] := extPrefac[\[CapitalDelta]\[Phi], x] = ((x)*( Conjugate[x]))^\[CapitalDelta]\[Phi]; 
 	kfunct[\[Beta]_, x_] := kfunct[\[Beta], x] = x^(\[Beta]/2)*Hypergeometric2F1[\[Beta]/2, \[Beta]/2, \[Beta], x]; 
     ConformalBlock[DD_, l_, z_] := ConformalBlock[DD, l, z] =((-1)^l/2^l)*((z*Conjugate[z])/(z - Conjugate[z]))*(kfunct[DD + l, z]*kfunct[DD - l - 2, Conjugate[z]] - 
        kfunct[DD + l, Conjugate[z]]*kfunct[DD - l - 2, z]); 
+
       
       (*random sample of z around (1/2+I0)*)
            Sample[nz_,var_,seed_] := Module[{imax}, SeedRandom[seed];Table[Abs[RandomVariate[NormalDistribution[0, var]]]+
@@ -28,7 +29,8 @@ renomFactor[dim_]:=Exp[-(dim-1)dimExpFactor[0,0]];
 (*renomFactor[dim_]:=1;*)
 (*Conformal Blocks*)
 qQGen[\[CapitalDelta]\[Phi]_,\[CapitalDelta]_,L_,zsample_]:=renomFactor[\[CapitalDelta]] (extPrefac[\[CapitalDelta]\[Phi], 1-zsample]    ConformalBlock[\[CapitalDelta], L , zsample]- extPrefac[\[CapitalDelta]\[Phi], zsample] ConformalBlock[\[CapitalDelta], L,1- zsample])2^(L);
-qQGenDims[\[CapitalDelta]\[Phi]_,\[CapitalDelta]L_,z_]:=qQGen[\[CapitalDelta]\[Phi],#1[[1]],#1[[2]], z]&/@\[CapitalDelta]L
+qQGenDims[\[CapitalDelta]\[Phi]_,\[CapitalDelta]L_,z_]:=qQGen[\[CapitalDelta]\[Phi],#1[[1]],#1[[2]], z]&/@\[CapitalDelta]L;
+qQId[\[CapitalDelta]\[Phi]_,zsample_]:=extPrefac[\[CapitalDelta]\[Phi], zsample] -extPrefac[\[CapitalDelta]\[Phi], 1-zsample]  ;
 
 (*functionals*)
 chi2Functional[qq0_,id_,w_,rhovec_]:=Block[{nu,s,r},
@@ -59,8 +61,7 @@ $MinPrecision=prec;
     SeedRandom[seed];
     Nz=Length[\[CapitalDelta]LOriginal]+1;
   zsample = Sample[Nz,1/100,seed]; 
-Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
-        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+Idsample = qQId[\[CapitalDelta]\[Phi],zsample];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
@@ -117,15 +118,14 @@ $MinPrecision=prec;
 
     SeedRandom[seed];
   zsample = Sample[Nz,sigmaz,seed]; 
-Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
-        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+Idsample = qQId[\[CapitalDelta]\[Phi],zsample];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
      
-          errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],0],{i,1,Nz}];
+          errSample=\[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample,0];
     (*Monte Carlo Iteration*)
 TotD =   Reap[ Do[
 $MinPrecision=prec;
@@ -133,15 +133,14 @@ If[fracvio<tol,
 If[converge,Print["Convergence!"];Break[],
 Print["resetting seed"]; 
 seed=seed+1;  zsample = Sample[Nz,sigmaz,seed]; 
-Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
-        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+Idsample = qQId[\[CapitalDelta]\[Phi],zsample];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
      
-          errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],0],{i,1,Nz}];converge=True],converge=False];
+          errSample=\[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample,0];converge=True],converge=False];
           \[CapitalDelta]LOld=\[CapitalDelta]L;
           QQold=QQ0; 
           resultsOld=results; 
@@ -165,7 +164,7 @@ res=(results[[1]].QQ0-Idsample)/errSample;
 nzerosnew=Count[results[[1]],0];
 fracvionew=Count[Abs[res]<1//Thread,False]/Nz;
 
-          If[fracvionew<fracvio (*|| nzeros>nzerosnew*), fracvio = fracvionew;nzeros=nzerosnew;sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (101/100),
+          If[fracvionew<=fracvio && nzeros>=nzerosnew, fracvio = fracvionew;nzeros=nzerosnew;sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (101/100),
           \[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold;   results=resultsOld; sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (99/100)];
 $MinPrecision=10;
    dw=\[CapitalDelta]L[[All,1]];
@@ -219,8 +218,7 @@ $MinPrecision=prec;
 
     SeedRandom[seed];
   zsample = Sample[Nz,sigmaz,seed]; 
-Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
-        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+Idsample = qQId[\[CapitalDelta]\[Phi],zsample];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
@@ -245,19 +243,18 @@ $MinPrecision=prec;
 
     SeedRandom[seed];
   zsample = Sample[Nz,sigmaz,seed]; 
-Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
-        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+Idsample =qQId[\[CapitalDelta]\[Phi],zsample];
+        Print[Dimensions[Idsample]];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
-errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],0],{i,1,Nz}];
+errSample=\[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample,0];
 results=cweightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
 
   zsample = Sample[Nz,sigmaz,seed+1]; 
-Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
-        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
+Idsample = qQId[\[CapitalDelta]\[Phi],zsample];
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
 
@@ -559,38 +556,40 @@ deltasimport=Import["~/mc-boo/gooddims"]//ToExpression;
 deltamc=Table[Transpose[{deltasimport[[i]],Range[0,16,2]}],{i,1,3}];
 
 
-\[CapitalDelta]L={{3,0},{5,2},{7,4},{9,6},{11,8},{13,10},{15,12},{17,14},{19,16}};
-\[Beta]list={1/5,1/6,1/7,1/8,1/9,1/10,1/11,1/13,1/15};
-nits=5{500,100,100,100,100,100,100,100,100};
-ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,100,88,100+50tol,nits,"tol="<>ToString[tol],1/10,tol/10],{tol,1,9}]
-
-
-\[CapitalDelta]L={{3,0},{5,2},{7,4},{9,6},{11,8},{13,10},{15,12},{17,14},{19,16}};
-\[Beta]list={1/5,1/6,1/7,1/8,1/9,1/10,1/11,1/13,1/15};
-nits=5{500,100,100,100,100,100,100,100,100};
-ParallelTable[mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,500,88,1000+50tol,nits,"tol="<>ToString[tol],1/10,tol/10],{tol,1,9}]
-
-
-ParallelTable[metroReturnAvgChi2[100,1000,200,10^(-4),deltamc[[2]],10+10 i,4,"Toltest",1/10,10^(-4),5i /100 ],{i,1,4}]
+i=3;
+SetOptions[RandomVariate,WorkingPrecision->100];
+\[CapitalDelta]L=deltaFree[9];
+SeedRandom[i];
+a=\[CapitalDelta]L[[;;,1]] RandomVariate[NormalDistribution[0,10^(-i)],9];
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] + a;
+metroReturnAvgChi2[100,2000,300,10^(-i),\[CapitalDelta]L,10+i,4,"deltasigma="<>ToString[i],1/10,10^(-i-1),0]
 
 
 
-
-
-\[CapitalDelta]L={{3,0},{5,2},{7,4},{9,6},{11,8},{13,10},{15,12},{17,14},{19,16}};
-ParallelTable[metroReturnAvgChi2[100,3000,200,10^(-i),\[CapitalDelta]L,10+i,4,"bad-delta",1/10,10^(-i),0],{i,1,2}]
-
-
-ccheckMetroWeightedBis[1,\[CapitalDelta]L,100,123,100,1/10]
 
 
 \[CapitalDelta]L=deltaFree[9];
-a=RandomVariate[NormalDistribution[0,10^(-4)],9];
-\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] + a;
-ccheckMetroWeightedBis[1,\[CapitalDelta]L,100,1,100,1/10]
+ccheckMetroWeightedBis[1,\[CapitalDelta]L,100,123,15,1/10]
 
 
-SetOptions[{RandomReal,RandomVariate},WorkingPrecision->100];
+zsample =Sample[15,1/10,2];
+SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^1 -
+        ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^1, {zv, 1, 15}],100]
+        
+
+
+SetPrecision[qQId[1,zsample],100]
+
+
+zsample =Sample[15,1/10,2];
+\[CapitalDelta]L=deltaFree[9];
+id=
+qqq=qQGenDims[1,\[CapitalDelta]L,zsample];
+errSample=\[Rho]intErrorEstimateFt[1,\[CapitalDelta]L[[-1,1]],zsample,0];
+weightedLeastSquares[(qqq//Transpose)//errSample,id/errSample,IdentityMatrix[15]];
+
+
+
 ultralowsigma=Table[
 \[CapitalDelta]L=deltaFree[9];
 SeedRandom[i];
