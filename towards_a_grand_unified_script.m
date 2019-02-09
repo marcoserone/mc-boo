@@ -545,13 +545,10 @@ a=RandomVariate[NormalDistribution[0,10^(-j/10 )],9]//Abs;
 mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,100,88,35+205j,nits,"convergence-normalsigma"<>ToString[j],1/10,1/10,5]//Timing,{j,1,10}]
 
 
+nits=15{300,100,100,100,100,100,100};
+\[Beta]list=(9/10){1/7,1/9,1/11,1/13,1/14,1/15};
 ParallelTable[
-SetOptions[RandomVariate,WorkingPrecision->100];
 \[CapitalDelta]L=deltaFree[9];
-i=2;
-SeedRandom[i j +k];
-a=\[CapitalDelta]L[[;;,1]] RandomVariate[NormalDistribution[0,10^(-i)],9];
-\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] + a;
-metroReturnAvgChi2[100,1000 k,100j,10^(-i),\[CapitalDelta]L,1450+i,4,"nz,nit="<>ToString[j]<>ToString[k],1/10,10^(-i-2),0]//Timing,{k,1,2},{j,1,4}]
-
-
+a=RandomVariate[NormalDistribution[0,10^(-j/10 )],9]//Abs;
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a);
+mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,100,88,35+205j,nits,"smallerbeta-normalsigma"<>ToString[j],1/10,1/10,5]//Timing,{j,1,10}]
