@@ -61,8 +61,7 @@ $MinPrecision=prec;
     SeedRandom[seed];
     Nz=Length[\[CapitalDelta]LOriginal]+1;
   zsample = Sample[Nz,1/100,seed]; 
-Idsample = extPrefac[\[CapitalDelta]\[Phi], zsample]
-      - extPrefac[\[CapitalDelta]\[Phi], 1-zsample];
+Idsample = qQId[\[CapitalDelta]\[Phi], zsample];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
@@ -75,7 +74,7 @@ $MinPrecision=prec;
           \[CapitalDelta]LOld=\[CapitalDelta]L;
           QQold=QQ0;  
 (*putative Unitarity bound*)
-If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1];
+If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2];
 (*let every successive run start by varying only the new operator*)
         If[it<Ndit/10&& Nz!=initialOps+1,dimToVary=Nz-1,  dimToVary = RandomInteger[{1,lmax}]];
        (*Shift one dimension by a random amount*)       
@@ -209,31 +208,6 @@ Export["zoom-Plot-chi_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta
 Return[{data[[nit-100;;nit,2]]//Mean,data[[nit-100;;nit,3]]//Mean}];
 ];
 
-checkMetroWeighted[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
-    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
-    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,res}, 
-    (*precision*)
-SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
-$MaxPrecision=prec;
-$MinPrecision=prec;
-
-    SeedRandom[seed];
-  zsample = Sample[Nz,sigmaz,seed]; 
-Idsample = qQId[\[CapitalDelta]\[Phi],zsample];
-    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
-  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
-  
-
-    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
-errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],0],{i,1,Nz}];
-results=weightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz]];
-
-
-res=results[[1]].QQ0-Idsample;
-Export["histogram-res-nocon-dist.pdf",Histogram[res,Round[Nz/20]]];
-finalcheck=Abs[res]<errSample//Thread;
-Return[{results,If[And@@finalcheck,And@@finalcheck,finalcheck]}];
-];
 ccheckMetroWeightedBis[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
     \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,res,nzeros}, 
@@ -245,7 +219,6 @@ $MinPrecision=prec;
     SeedRandom[seed];
   zsample = Sample[Nz,sigmaz,seed]; 
 Idsample =qQId[\[CapitalDelta]\[Phi],zsample];
-        Print[Dimensions[Idsample]];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
@@ -559,12 +532,17 @@ chi2Functional[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz],
 
 
 deltasimport=Import["~/mc-boo/gooddims"]//ToExpression;
-deltamc=Table[Transpose[{deltasimport[[i]],Range[0,16,2]}],{i,1,3}];
+spinAppender[\[CapitalDelta]_]:=Table[Transpose[{\[CapitalDelta][[i]],Range[0,16,2]}],{i,1,3}];
 
 
 
-
-
+nits=15{300,100,100,100,100,100,100};
+\[Beta]list={1/7,1/9,1/11,1/13,1/14,1/15};
+ParallelTable[
+\[CapitalDelta]L=deltaFree[9];
+a=RandomVariate[NormalDistribution[0,10^(-j/10 )],9]//Abs;
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a);
+mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,100,88,35+205j,nits,"convergence-normalsigma"<>ToString[j],1/10,1/10,5]//Timing,{j,1,10}]
 
 
 ParallelTable[
