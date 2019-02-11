@@ -268,7 +268,7 @@ If[debugging,Print[checks]];
 If[(checks[[2]]==1) &&(checks[[3]]<=nzeros+1) ,
 nzeros=checks[[3]];it=it+1;repCount=0,
 If[repCount<maxReps,\[CapitalDelta]L[[1;;it,1]]=\[CapitalDelta]L[[1;;it,1]](1+Table[RandomReal[{-1/100,1/100}],{i,1,it}]);
-Print["Rejected"];Print[checks[[2;;3]]];seed=seed+finalOps;repCount=repCount+1,Print["Failed logdet mc"]logdetConv=False;Break[]]];
+Print["Rejected"];Print[checks[[2;;3]]];seed=seed+finalOps;repCount=repCount+1,Print["Failed logdet mc"];logdetConv=False;Break[]]];
 ];
 ];
 Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
@@ -567,12 +567,17 @@ mcIterator[1,4,9,\[CapitalDelta]L,\[Beta]list,100,88,35+205j,nits,"convergence-n
 nits=15{300,100,100,100,100,100,100};
 \[Beta]list={1/7,1/9,1/11,1/13,1/14,1/15};
 ParallelTable[
-SetOptions[RandomVariate,WorkingPrecision->100];
+SetOptions[RandomReal,WorkingPrecision->100];
 \[CapitalDelta]L=deltaFree[9];
-SeedRandom[i];
-a=\[CapitalDelta]L[[;;,1]] RandomVariate[NormalDistribution[0,10^(-i/10)],9]//Abs;
+SeedRandom[i+34];
+a=RandomReal[{-i/10,i/10},9];
 \[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a);
-{\[CapitalDelta]L,fullMC[True,1,4,9,\[CapitalDelta]L,\[Beta]list,100,100,20i,nits,"First_full_test",1/10,{1/10,1/10000},5,0]}//Timing,{i,1,10}]
+{\[CapitalDelta]L,fullMC[True,1,4,9,\[CapitalDelta]L,\[Beta]list,100,100,23i,nits,"First_full_test"<>ToString[i],1/10,{1/10,1/10000},5,0]}//Timing,{i,3,14}]
 
 
 
+
+
+\[CapitalDelta]L=deltaFree[9];
+a=RandomReal[{-1/10,1/10},9];
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a)
