@@ -245,6 +245,8 @@ Return[{results,Count[finalcheck,True]/Nz, nzeros}];
 
 mcIterator[\[CapitalDelta]\[Phi]_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps},
 it=initialOps;
+
+SetOptions[RandomReal,WorkingPrecision->100];
 results=Reap[
 While[it<=finalOps,
 \[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC]][[1]];
@@ -260,6 +262,7 @@ Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOp
 
 fullMC[debugging_,\[CapitalDelta]\[Phi]_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,tol_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps,logdetConv=True},
 it=initialOps;
+SetOptions[RandomReal,WorkingPrecision->100];
 results=Reap[
 While[it<=finalOps,
 \[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC[[1]]]][[1]];
