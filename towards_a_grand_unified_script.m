@@ -234,7 +234,7 @@ Idsample = qQId[\[CapitalDelta]\[Phi],zsample];
 
 nzeros=Count[results[[1]],0];
 
-errSample=\[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample,0] ;
+errSample=\[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-nzeros,1]],zsample,0] ;
 res=(results[[1]].QQ0-Idsample)/errSample;
 Export["histogram-res-dist.pdf",Histogram[res,Round[Nz/50]]];
 finalcheck=Abs[res]<1//Thread;
@@ -268,7 +268,8 @@ If[debugging,Print[checks]];
 If[(checks[[2]]==1) &&(checks[[3]]<=nzeros+1) ,
 nzeros=checks[[3]];it=it+1;repCount=0,
 If[repCount<maxReps,\[CapitalDelta]L[[1;;it,1]]=\[CapitalDelta]L[[1;;it,1]](1+Table[RandomReal[{-1/100,1/100}],{i,1,it}]);
-Print["Rejected"];Print[checks[[2;;3]]];seed=seed+finalOps;repCount=repCount+1,Print["Failed logdet mc"];logdetConv=False;Break[]]];
+Print["Rejected"];Print[checks[[2;;3]]];seed=seed+finalOps;repCount=repCount+1,
+Print["Failed logdet mc"];logdetConv=False;Break[]]];
 ];
 ];
 Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
@@ -569,10 +570,10 @@ nits=15{300,100,100,100,100,100,100};
 ParallelTable[
 SetOptions[RandomReal,WorkingPrecision->100];
 \[CapitalDelta]L=deltaFree[9];
-SeedRandom[i+34];
-a=RandomReal[{-i/10,i/10},9];
+SeedRandom[i];
+a=RandomReal[{-i/100,i/100},9];
 \[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a);
-{\[CapitalDelta]L,fullMC[True,1,4,9,\[CapitalDelta]L,\[Beta]list,100,100,23i,nits,"First_full_test"<>ToString[i],1/10,{1/10,1/10000},5,0]}//Timing,{i,3,14}]
+{\[CapitalDelta]L,fullMC[True,1,4,9,\[CapitalDelta]L,\[Beta]list,100,100,23i,nits,"First_full_test"<>ToString[i],1/10,{1/10,1/10000},5,0]}//Timing,{i,11,25}]
 
 
 
