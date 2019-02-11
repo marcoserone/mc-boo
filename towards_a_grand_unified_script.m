@@ -234,7 +234,7 @@ Idsample = qQId[\[CapitalDelta]\[Phi],zsample];
 
 nzeros=Count[results[[1]],0];
 
-errSample=\[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-nzeros,1]],zsample,0] ;
+errSample=\[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1-nzeros,1]],zsample,0];
 res=(results[[1]].QQ0-Idsample)/errSample;
 Export["histogram-res-dist.pdf",Histogram[res,Round[Nz/50]]];
 finalcheck=Abs[res]<1//Thread;
@@ -584,4 +584,8 @@ a=RandomReal[{-i/100,i/100},9];
 
 \[CapitalDelta]L=deltaFree[9];
 a=RandomReal[{-1/10,1/10},9];
-\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a)
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a);
+\[CapitalDelta]L[[-0,1]]
+
+
+
