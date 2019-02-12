@@ -244,13 +244,13 @@ where
 \vec{\sigma} \, \equiv \, \left( \begin{matrix}
                       |z_1|^{2\Delta_\phi} \, - \, |1-z_1|^{2 \Delta_\phi}\\  |z_2|^{2\Delta_\phi} \, - \, |1-z_2|^{2 \Delta_\phi} \\ \vdots
                      \end{matrix} \right) 
-                     \quad \, \text{and} \, \quad 
+                     \quad \, , \, \quad 
                       \vec{\epsilon} \, \equiv \, 
                           \left( \begin{matrix}
                                   \mathcal{E}(z_1,\bar z_1,\Delta_*,\Delta_\phi) \\
                                   \mathcal{E}(z_2,\bar z_2,\Delta_*,\Delta_\phi) \\
                                   \vdots
-                                 \end{matrix} \right)  \, .
+                                 \end{matrix} \right)  \, ,
 \end{equation}
 
 and
@@ -267,7 +267,7 @@ and
 
 
 
-The straightforward path is to define a cost function
+The straightforward path would be to define a cost function
 \[
   C(\Delta_i,\vec\rho)\sim | \mathcal{M}(\Delta_i)\cdot \vec{\rho} - \vec{\sigma} |
 \]
@@ -289,7 +289,7 @@ satisfying crossing) to exist, each minor should vanish.
 
 \section{LogDet implementation}
 \subsection{naive approach}
-Given a putative spectrum, the determinant of \ref{matrix-op}
+Given a putative spectrum, the determinant of \ref{matrix-op} for $Nz=N_{Op}$
 should get closer to zero as we approach a physically sensible set of operator
 dimensions. Since this quantity could range over many orders of magnitude, we
 decided to square it and then take the $\log$ of it. This proved to be
@@ -315,7 +315,7 @@ free theory, and numerical exploration showed that the basin of attraction for
 each given operator's dimension was very sharp, as long as the other ones were
 kept at the exact value. Small perturbations destroyed this basin rather
 quickly, and thus it was hard to get the MC routine to solve for a large number
-of operators  ($\sim 7$) at the same time.
+of operators  ($\sim 7$) at the same time, given generic initial conditions.
 
 \subsection{Recursive with check}
 \label{rec-check}
@@ -337,12 +337,16 @@ where $\vec \epsilon _{\mathrm{max}}$ is just $\vec \epsilon$ under the
 substitution $\mathcal{E}(z,\bar z; \Delta^*)\to\mathcal{E}_{\mathrm{max}}(z,\bar z; \Delta^*)$
 Then, the result of each end state of the MC could be tested to see if it
 satisfied Crossing Symmetry with the precision correspoinding to the $\Delta^*$
-considered. Otherwise, it changed the seed of the pseudorandom generator and
-started again the MC.
+considered\footnote{$\vec \rho$ was determined by a modified $\chi^2$
+minimization program. See \ref{cWLS}.}. Otherwise, it changed the seed of the pseudorandom generator and
+started again the MC. The routine ended if at a given number of operators, more
+than a certain number of repetitions was achieved, thus avoiding waste of CPU
+time.
 
 
 \section{$\chi^2$ refinement}
 \subsection{cWLS as a way to determine the OPE coefficients}
+\label{cWLS}
 Since the dependence of \ref{cross-check} on $\vec{\rho}$ is linear, for
 $N_z>N_{Op}$ it is possible to find the set of OPE coefficients that best
 satisfy crossing via the Weighted Least Squares method\footnote{Should we add a
@@ -369,7 +373,7 @@ OPE, \ref{cross-check} is satisfied.
 For properly chosen
 points in $z$, not all the inequalties in \ref{cross-check} will be satisfied,
 one can then take this number and try to minimize it with another Monte Carlo
-routine.
+routine. \emph{I'm still missing consistent results for this part.}
 
 \section{Summary of results}
 \subsection{Free CFT in 4d}

@@ -164,6 +164,10 @@ res=(results[[1]].QQ0-Idsample)/errSample;
 nzerosnew=Count[results[[1]],0];
 fracvionew=Count[Abs[res]<1//Thread,False]/Nz;
 
+(*Debugging
+Print[res//Dimensions];
+Print[fracvionew//Dimensions];*)
+
           If[fracvionew<fracvio && nzeros>=nzerosnew, fracvio = fracvionew;nzeros=nzerosnew;sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (101/100),
           \[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold;   results=resultsOld; sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (99/100)];
 $MinPrecision=10;
@@ -198,7 +202,7 @@ MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi],\[CapitalDelta]L,nit,prec,\[Beta]
 data= Get["Res-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>idtag<>".txt"];
 Export["Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".pdf",ListPlot[Table[data[[All,2]][[All,i]],{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->\[CapitalDelta]L[[;;,2]],PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
 Export["zoom-Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".pdf",ListPlot[Table[data[[All,2]][[All,i]]-2i+1,{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{{0,nit},{0,2}},PlotLegends->\[CapitalDelta]L[[;;,2]],PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
-{Mean[data[[All,2]]],StandardDeviation[data[[All,2]]]}];
+{Mean[data[[nit-100;;nit,2]]],StandardDeviation[data[[nit-100;;nit,2]]]}];
 
 metroReturnAvgChi2[prec_,nit_,Nz_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_,sigmaz_,sigmaMC_,tol_]:=Block[{data},
 MetroGoFixedSelectiveDirChi2[1,\[CapitalDelta]L,Nz,nit,prec,\[Beta],seed,sigmaMC,1/3,Length[\[CapitalDelta]L],idtag,sigmaz,tol];
@@ -276,7 +280,8 @@ Print["Failed logdet mc"];logdetConv=False;Break[]]];
 ];
 ];
 Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
-If[nzeros<finalOps-initialOps&&logdetConv,metroReturnAvgChi2[prec,nits[[1]],Nz_,1,\[CapitalDelta]L,seed,initialOps,idtag_,sigmaz,sigmaMC[[2]],tol],
+If[nzeros<finalOps-initialOps&&logdetConv,
+metroReturnAvgChi2[prec,nits[[1]],nz,1,\[CapitalDelta]L,seed,initialOps,runid,sigmaz,sigmaMC[[2]],tol],
 Print["Bad logdet. Skipping nov min."]];
 ]
 
@@ -555,7 +560,7 @@ chi2Functional[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz],
 
 
 deltasimport=Import["~/mc-boo/gooddims"]//ToExpression;
-spinAppender[\[CapitalDelta]_]:=Table[Transpose[{\[CapitalDelta][[i]],Range[0,16,2]}],{i,1,3}];
+spinAppender[\[CapitalDelta]_]:=Transpose[{\[CapitalDelta],Range[0,16,2]}];
 
 
 
@@ -573,7 +578,7 @@ nits=15{300,100,100,100,100,100,100};
 ParallelTable[
 SetOptions[RandomReal,WorkingPrecision->100];
 \[CapitalDelta]L=deltaFree[9];
-SeedRandom[i];
+SeedRandom[i+23456];
 a=RandomReal[{-i/100,i/100},9];
 \[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a);
 {\[CapitalDelta]L,fullMC[True,1,4,9,\[CapitalDelta]L,\[Beta]list,100,100,23i,nits,"First_full_test"<>ToString[i],1/10,{1/10,1/10000},5,0]}//Timing,{i,11,25}]
@@ -582,10 +587,16 @@ a=RandomReal[{-i/100,i/100},9];
 
 
 
+ParallelTable[
+SetOptions[RandomReal,WorkingPrecision->100];
 \[CapitalDelta]L=deltaFree[9];
-a=RandomReal[{-1/10,1/10},9];
+SeedRandom[i];
+a=RandomReal[{-i/100,i/100},9];
 \[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a);
-\[CapitalDelta]L[[-0,1]]
+\[CapitalDelta]L,{i,{11,22}}]//N
 
 
+{1.379460672341614541126757609155963632648672389830295555233207442338073654107912811361808238946515322`100., 0.1113274282712459247912223307825241984052015034239516144952736706663438543502753665549145365036934544`100., 0.003741486696958425059953802468684454274250888295215825231565461941576839849636364269384562605119802088`100., 0.000239699144124181086829463377543380165992067274978875512173202298397121225670616859324548647620585437`100., 0, 0, 0, 0, 0}//N
 
+
+opeFreeRen[9]//N
