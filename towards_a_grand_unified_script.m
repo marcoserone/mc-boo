@@ -264,6 +264,25 @@ Print["Rejected"];Print[checks[[2;;3]]];seed=seed+finalOps;repCount=repCount+1,P
 Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
 ]
 
+(*no check baby*)
+mcIteratorNoCheck[\[CapitalDelta]\[Phi]_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps},
+it=initialOps;
+SetOptions[RandomReal,WorkingPrecision->100];
+results=Reap[
+While[it<=finalOps,
+\[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC]][[1]];
+checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]];
+If[True,
+nzeros=checks[[3]];it=it+1;repCount=0,
+If[repCount<maxReps,\[CapitalDelta]L[[1;;it,1]]=\[CapitalDelta]L[[1;;it,1]](1+Table[RandomReal[{-1/100,1/100}],{i,1,it}]);
+Print["Rejected"];Print[checks[[2;;3]]];seed=seed+finalOps;repCount=repCount+1,Print["Andato_a"];Break[]]];
+];
+];
+Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
+]
+
+
+
 fullMC[debugging_,\[CapitalDelta]\[Phi]_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,tol_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps,logdetConv=True},
 it=initialOps;
 SetOptions[RandomReal,WorkingPrecision->100];
@@ -584,9 +603,6 @@ a=RandomReal[{-i/100,i/100},9];
 {\[CapitalDelta]L,fullMC[True,1,4,9,\[CapitalDelta]L,\[Beta]list,100,100,23i,nits,"First_full_test"<>ToString[i],1/10,{1/10,1/10000},5,0]}//Timing,{i,11,25}]
 
 
-
-
-
 ParallelTable[
 SetOptions[RandomReal,WorkingPrecision->100];
 \[CapitalDelta]L=deltaFree[9];
@@ -600,3 +616,39 @@ a=RandomReal[{-i/100,i/100},9];
 
 
 opeFreeRen[9]//N
+
+
+\[CapitalDelta]L=deltaFree[20];
+\[CapitalDelta]L[[1;;4,1]]=\[CapitalDelta]L[[1;;4,1]] (1+ 1/2);
+\[CapitalDelta]L[[4;;20,1]]=\[CapitalDelta]L[[4;;20,1]] (1+ 1/10);
+nits=15{300,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100};
+\[Beta]list={1/7,1/9,1/11,1/13,1/14,1/15,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20};
+mcIteratorNoCheck[1,4,20,\[CapitalDelta]L,\[Beta]list,20,100,123,nits,"let's_see_how_far_we_go",1/100,1/10,1]
+
+
+\[CapitalDelta]L=deltaFree[20];
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ 1/1000);
+metroReturnAvg[1,100,20,1/20,\[CapitalDelta]L,123,20,"manyops",1/10]
+
+
+\[CapitalDelta]L=deltaFree[20];
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1- 1/1000);
+metroReturnAvg[1,100,20,1/20,\[CapitalDelta]L,123,20,"manyops-neg",1/10]
+
+
+\[CapitalDelta]L=deltaFree[5];
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ 1/1000);
+metroReturnAvg[1,100,20,1/20,\[CapitalDelta]L,123,20,"fewops",1/10]
+
+
+\[CapitalDelta]L=deltaFree[5];
+\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1- 1/1000);
+metroReturnAvg[1,100,20,1/20,\[CapitalDelta]L,123,20,"fewops-neg",1/10]
+
+
+\[CapitalDelta]L=deltaFree[20];
+\[CapitalDelta]L[[1;;4,1]]=\[CapitalDelta]L[[1;;4,1]] (1+ 1/2);
+\[CapitalDelta]L[[4;;20,1]]=\[CapitalDelta]L[[4;;20,1]] (1+ 1/10);
+nits=15{300,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100};
+\[Beta]list={1/5,1/9,1/11,1/13,1/14,1/15,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20};
+mcIteratorNoCheck[1,4,20,\[CapitalDelta]L,\[Beta]list,20,100,123,nits,"test-beta",1/10,1/10,1]
