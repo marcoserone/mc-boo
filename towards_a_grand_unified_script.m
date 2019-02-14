@@ -662,4 +662,13 @@ a=ConstantArray[1/10,20];
 mcIteratorNoCheck[1,4,20,\[CapitalDelta]L,\[Beta]list,20,100,376,nits,"testing_update_sigma",1/10,a,1]//Timing
 
 
+\[CapitalDelta]L=deltaFree[20];
+\[CapitalDelta]L[[1;;4,1]]=\[CapitalDelta]L[[1;;4,1]] (1+ 1/2);
+\[CapitalDelta]L[[4;;20,1]]=\[CapitalDelta]L[[4;;20,1]] (1+ 1/10);
+nits=15{300,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100};
+a=ConstantArray[1/10,20];
+\[Beta]list={1/5,1/9,1/11,1/13,1/14,1/15,1/20,1/20,1/20,1/25,1/25,1/25,1/25,1/30,1/30,1/30,1/30};
+mcIteratorNoCheck[1,4,20,\[CapitalDelta]L,\[Beta]list,20,100,376,nits,"testing_update_sigma",1/10,a,1]//Timing
+
+
 
