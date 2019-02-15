@@ -73,8 +73,8 @@ TotD =   Reap[ Do[
 $MinPrecision=prec;
           \[CapitalDelta]LOld=\[CapitalDelta]L;
           QQold=QQ0;  
-(*putative Unitarity bound*)
-If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2];
+(*putative Unitarity bound
+If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2];*)
 (*let every successive run start by varying only the new operator*)
         If[it<Ndit/10&& Nz!=initialOps+1,dimToVary=Nz-1,  dimToVary = RandomInteger[{1,lmax}]];
        (*Shift one dimension by a random amount*)       
@@ -661,15 +661,22 @@ mcIteratorNoCheck[1,4,20,\[CapitalDelta]L,\[Beta]list,20,100,123,nits,"wider_z",
 metroReturnAvg[1,100,20,1/20,\[CapitalDelta]L,123,20,"fewops-neg",1/10]
 
 
-\[CapitalDelta]L=deltaFree[20];
-\[CapitalDelta]L[[1;;4,1]]=\[CapitalDelta]L[[1;;4,1]] (1+ 3/7);
-\[CapitalDelta]L[[4;;20,1]]=\[CapitalDelta]L[[4;;20,1]] (1+ 1/10);
-nits=15{300,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100,100};
-\[Beta]list={1/7,1/9,1/11,1/13,1/14,1/15,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20,1/20};
-mcIteratorNoCheck[1,4,20,\[CapitalDelta]L,\[Beta]list,20,100,123,nits,"other_delta",1/10,1/10,1]
+minops=4;
+maxops=40;
+\[CapitalDelta]L=deltaFree[maxops];
+\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] (1+ 1/2);
+\[CapitalDelta]L[[minops;;maxops,1]]=\[CapitalDelta]L[[minops;;maxops,1]] (1+ 3/10);
+nits=16 (ConstantArray[100,maxops-minops]);
+nits[[1]] = 3000;
+\[Beta]list=(1/2)Table[1/(2i-2),{i,minops,maxops}];
+mcIteratorNoCheck[1,4,20,\[CapitalDelta]L,\[Beta]list,20,100,123,nits,"limit-50-30",1/20,1/10,1]
 
 
-mcPlotDimsAndOPEs[4,20,20,100,123,"wider z"]
+maxops=4;
+\[CapitalDelta]L=deltaFree[maxops];
+\[CapitalDelta]L[[1;;maxops,1]]=\[CapitalDelta]L[[1;;maxops,1]] (1+ 1/2);
+metroReturnAvg[1,100,3000,1/5,\[CapitalDelta]L,123,4,"testing-refine",1/10]
+
 
 
 
