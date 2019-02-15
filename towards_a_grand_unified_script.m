@@ -692,3 +692,31 @@ mcIteratorNoCheck[1,4,maxops,\[CapitalDelta]L,\[Beta]list,20,100,1+15i,nits,"sig
 
 
 
+
+
+maxops=8;
+\[CapitalDelta]L=deltaFree[maxops];
+\[CapitalDelta]L[[1;;4,1]]=\[CapitalDelta]L[[1;;4,1]] (1+ 3/4);
+\[CapitalDelta]L[[4;;maxops,1]]=\[CapitalDelta]L[[4;;maxops,1]] (1+ 1/10);
+nits=15{300,100,100,100,100};
+a=ConstantArray[1/10,maxops];
+\[Beta]list={1/5,1/9,1/11,1/13,1/14};
+ParallelTable[
+mcIteratorNoCheck[1,4,maxops,\[CapitalDelta]L,\[Beta]list,20,100,545+10i,nits,"bis-sigmafac="<>ToString[i],1/10,a,1,100/(100+2i)]//Timing,{i,0,9}]
+
+
+
+
+
+Table[mcPlotDimsAndOPEs[4,8,20,100,1+15i,"sigmafac="<>ToString[i]],{i,1,10}]
+
+
+\[CapitalDelta]L=deltaFree[maxops];
+\[CapitalDelta]L[[1;;4,1]]=\[CapitalDelta]L[[1;;4,1]] (1+ 3/4);
+\[CapitalDelta]L[[4;;maxops,1]]=\[CapitalDelta]L[[4;;maxops,1]] (1+ 1/10);
+
+
+\[CapitalDelta]L//N
+
+
+100/120//N
