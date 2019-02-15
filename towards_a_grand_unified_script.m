@@ -202,7 +202,7 @@ MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi],\[CapitalDelta]L,nit,prec,\[Beta]
 data= Get["Res-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>idtag<>".txt"];
 Export["Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".pdf",ListPlot[Table[data[[All,2]][[All,i]],{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->\[CapitalDelta]L[[;;,2]],PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
 Export["zoom-Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".pdf",ListPlot[Table[data[[All,2]][[All,i]]-2i+1,{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{{0,nit},{0,2}},PlotLegends->\[CapitalDelta]L[[;;,2]],PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
-{Mean[data[[nit-100;;nit,2]]],StandardDeviation[data[[nit-100;;nit,2]]]}];
+{Mean[data[[nit-100;;nit,2]]],StandardDeviation[data[[nit-100;;nit,2]]],data[[-1]]}];
 
 metroReturnAvgChi2[prec_,nit_,Nz_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_,sigmaz_,sigmaMC_,tol_]:=Block[{data},
 MetroGoFixedSelectiveDirChi2[1,\[CapitalDelta]L,Nz,nit,prec,\[Beta],seed,sigmaMC,1/3,Length[\[CapitalDelta]L],idtag,sigmaz,tol];
@@ -281,6 +281,32 @@ Print["Rejected"];Print[checks[[2;;3]]];seed=seed+finalOps;repCount=repCount+1,P
 Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
 ]
 
+mcRefiner[\[CapitalDelta]\[Phi]_,nreps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO},
+it=1;
+SetOptions[RandomReal,WorkingPrecision->100];
+results=Reap[
+While[it<=nreps,
+\[CapitalDelta]L[[;;,1]]=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],prec,nits,\[Beta],\[CapitalDelta]L,seed,Length[\[CapitalDelta]L],runid,sigmaMC[[it]]]][[1]];
+checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L,prec,seed+1,nz,sigmaz]];
+it=it+1;
+];
+];
+Export["averages_n_checks-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
+]
+mcPlotRef[nreps_,nz_,prec_,seed_,runid_]:=Block[{data,dims,opes,mcDimserr,mcDims,mcOpes,refDims,refOpes},
+data= Get["averages_n_checks-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt"];
+dims=data[[1,Range[1,2nreps -1,2]]];
+opes=data[[1,Range[2,2nreps ,2]]];
+mcDims=ListPlot[dims[[;;,1,1;;4]]//Transpose,PlotLegends->{"l=0","l=2","l=4","l=6"},PlotRange->All];
+mcDimserr=Table[ListPlot[((dims[[;;,1,i]]) - 2i)/2i,PlotRange->{-0.1,0.1}],{i,1,4}];
+refDims=Plot[{2,4,6,8},{x,0,nreps},PlotStyle->Dashed];
+mcOpes=ListPlot[opes[[;;,1,1,1;;4]]//Transpose,PlotLegends->{"l=0","l=2","l=4","l=6"},PlotRange->All];
+refOpes=Plot[{2,1/3},{x,0,nreps},PlotStyle->Dashed];
+Export["dims-plot-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".pdf",Show[mcDims,refDims],PlotLabel->"Dims_from-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]];
+Export["opes-plot-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".pdf",Show[mcOpes,refOpes],PlotLabel->"OPEs_from-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]];
+Table[Export["dims-err-plot-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".pdf",Show[mcDimserr[[i]]],PlotLabel->"dim_error_from-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]],{i,1,4}];
+Return[opes[[;;,2]]]
+]
 
 
 fullMC[debugging_,\[CapitalDelta]\[Phi]_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,tol_]:=Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps,logdetConv=True},
@@ -679,4 +705,46 @@ metroReturnAvg[1,100,3000,1/5,\[CapitalDelta]L,123,4,"testing-refine",1/10]
 
 
 
+\[CapitalDelta]L[[1;;maxops,1]]={1.88590382856212932468624550126776117182679919757466050162807461805214006888373493768357294078838465`100.,4.063693655015287303110863867082401606483915566359442620710942313969832545774009536291364649118885776`100.,5.864603015065234000680756400806591219496727148075402434101686987019290634364885266817155054317919521`100.,7.642572459836518252507454327186402226028077417843381469262517437296138083036980874757984863806232652`100.}
 
+
+\[CapitalDelta]L
+
+
+
+metroReturnAvg[1,100,1000,1/5,\[CapitalDelta]L,123,4,"testing-refine",1/20]
+
+
+\[CapitalDelta]L[[1;;maxops,1]]={1.914381497099365473944104879771293645925141151509430257383874397652935398936797598847095411652859041`100.,3.994432400887540321889568266594671506154399012833844287257440820635946280422457598961326793941662677`100.,5.986731131910766633638016450802184656216994464283898119051427379750289894673427396581942730426455941`100.,7.973643479599193229645221207893662195313760229508709201904318053971311848721894358446905692428530763`100.};
+
+
+metroReturnAvg[1,100,1000,1/5,\[CapitalDelta]L,123,4,"more-refined",1/30]
+
+
+\[CapitalDelta]L[[1;;maxops,1]]=metroReturnAvg[1,100,1000,1/5,\[CapitalDelta]L,123,4,"more-refined",1/40][[1]]
+
+
+\[CapitalDelta]L[[1;;maxops,1]]=metroReturnAvg[1,100,1000,1/5,\[CapitalDelta]L,123,4,"more-refined",1/50][[1]]
+
+
+\[CapitalDelta]L[[1;;maxops,1]]=metroReturnAvg[1,100,1000,1/5,\[CapitalDelta]L,123,4,"more-refined",1/60][[1]]
+
+
+metroReturnAvg[1,100,100,1/5,\[CapitalDelta]L,123,4,"more-refined",1/70]
+
+
+maxops=4;
+\[CapitalDelta]L=deltaFree[maxops];
+\[CapitalDelta]L[[1;;maxops,1]]=\[CapitalDelta]L[[1;;maxops,1]] (1+ 1/2);
+sigmaMC=Table[1/(10i),{i,1,5}];
+mcRefiner[1,5,\[CapitalDelta]L,1/5,40,100,5,1500,"repet-test",1/10,sigmaMC]
+
+
+mcPlotRef[3,40,100,4,"repet-test"]
+
+
+maxops=4;
+\[CapitalDelta]L=deltaFree[maxops];
+\[CapitalDelta]L[[1;;maxops,1]]=\[CapitalDelta]L[[1;;maxops,1]] (1+ 1/2);
+sigmaMC=Table[1/(10i),{i,1,5}];
+mcRefiner[1,5,\[CapitalDelta]L,1/5,40,100,5,4500,"repet-test",1/10,sigmaMC]
