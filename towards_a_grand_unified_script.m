@@ -188,7 +188,10 @@ rhovec=Inverse[Transpose[qq0bis].w.qq0bis].Transpose[qq0bis] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0bis.rhovec-id);
 s=r.w.r;n=n+1];
-Return[{Join[rhovec,ConstantArray[0,n-1]], Sqrt[s/nu]}];
+If[n>1,
+Return[{Join[rhovec,ConstantArray[0,n-1]], Sqrt[s/nu]}],
+Return[{rhovec, Sqrt[s/nu]}]
+];
 ]
 weightedLeastSquares[qq0_,id_,w_]:=Block[{rhovec,nu,s,r},
 rhovec=Inverse[Transpose[qq0].w.qq0].Transpose[qq0] . w.id;
@@ -300,12 +303,8 @@ opes=data[[1,Range[2,2nreps ,2]]];
 mcDims=ListPlot[dims[[;;,1,1;;4]]//Transpose,PlotLegends->{"l=0","l=2","l=4","l=6"},PlotRange->All];
 mcDimserr=Table[ListPlot[((dims[[;;,1,i]]) - 2i)/2i,PlotRange->{-0.1,0.1}],{i,1,4}];
 refDims=Plot[{2,4,6,8},{x,0,nreps},PlotStyle->Dashed];
-mcOpes=ListPlot[opes[[;;,1,1,1;;4]]//Transpose,PlotLegends->{"l=0","l=2","l=4","l=6"},PlotRange->All];
-refOpes=Plot[{2,1/3},{x,0,nreps},PlotStyle->Dashed];
 Export["dims-plot-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".pdf",Show[mcDims,refDims],PlotLabel->"Dims_from-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]];
-Export["opes-plot-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".pdf",Show[mcOpes,refOpes],PlotLabel->"OPEs_from-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]];
-Table[Export["dims-err-plot-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".pdf",Show[mcDimserr[[i]]],PlotLabel->"dim_error_from-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]],{i,1,4}];
-Return[opes[[;;,2]]]
+Table[Export["dims-err-plot-refiner"<>ToString[nreps]<>runid<>ToString[i]<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".pdf",Show[mcDimserr[[i]]],PlotLabel->"dim_error_from-refiner"<>ToString[nreps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]],{i,1,4}];
 ]
 
 
@@ -740,11 +739,20 @@ sigmaMC=Table[1/(10i),{i,1,5}];
 mcRefiner[1,5,\[CapitalDelta]L,1/5,40,100,5,1500,"repet-test",1/10,sigmaMC]
 
 
-mcPlotRef[3,40,100,4,"repet-test"]
+Table[mcPlotRef[10,40,100,10+i,"biggertest"<>ToString[i]],{i,1,6}]
+
+
+maxops=4;
+\[CapitalDelta]L=deltaFree[maxops];
+\[CapitalDelta]L[[1;;maxops,1]]=\[CapitalDelta]L[[1;;maxops,1]] (1+ 6/10);
+sigmaMC=Table[1/(5i),{i,2,10}];
+ParallelTable[
+mcRefiner[1,5,\[CapitalDelta]L,1/5,40,100,5+35i,3000,"init6-10"<>ToString[i],1/10,sigmaMC]//Timing,{i,10,15}]
 
 
 maxops=4;
 \[CapitalDelta]L=deltaFree[maxops];
 \[CapitalDelta]L[[1;;maxops,1]]=\[CapitalDelta]L[[1;;maxops,1]] (1+ 1/2);
-sigmaMC=Table[1/(10i),{i,1,5}];
-mcRefiner[1,5,\[CapitalDelta]L,1/5,40,100,5,4500,"repet-test",1/10,sigmaMC]
+
+
+\[CapitalDelta]L
