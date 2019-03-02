@@ -148,7 +148,8 @@ CD}}}{\longleftrightarrow}}}
 \maketitle
 
 \section{Introduction}
-The Conformal Bootstrap offers a way to chart the space of acceptable CFTs. 
+The Conformal Bootstrap offers a way to chart the space of unitary and crossing
+symmetric CFTs. 
 
 There has recently been a great revival of interest in the conformal bootstrap program \cite{Ferrara:1973yt,Polyakov:1974gs} after ref.\cite{Rattazzi:2008pe} observed that 
 its applicability extends to Conformal Field Theories (CFTs) in $d>2$ dimensions. 
@@ -289,7 +290,8 @@ satisfying crossing) to exist, each minor should vanish.
 
 \section{LogDet implementation}
 \subsection{naive approach}
-Given a putative spectrum, the determinant of \ref{matrix-op} for $Nz=N_{Op}$
+Given a putative spectrum, the determinant of \ref{matrix-op} (when
+$Nz=N_{Op}+1$)
 should get closer to zero as we approach a physically sensible set of operator
 dimensions. Since this quantity could range over many orders of magnitude, we
 decided to square it and then take the $\log$ of it. This proved to be
@@ -325,9 +327,12 @@ The next breakthrough in the routine came when we decided to start with few
 action and then add the next operators one by one. To avoid spoiling
 the previous solution, only the new operator was varied for a given number of
 steps before we allowed the whole spectrum to be optimized. This gave a very
-efficient routine with a large radius of convergence.
+efficient routine with a large radius of convergence. (As of 19/02, we have
+convergence for 50\% above exact dimension for $l=0,2,4,6$ and 10\% for $8\leq l
+\leq 48$, using 3000 iterations for the first step and 1500 for each subsequent
+one).
 
-This recursive step was further improved by using
+For unitary theories, this recursive step was further improved by using
 \ref{error-bound} to bound \ref{matrix-boo} as 
 \begin{equation}
   | \mathcal{M}\cdot \vec{\rho}-\vec{\sigma} | < \vec{\epsilon}_{\mathrm{max}},
@@ -342,7 +347,11 @@ considered\footnote{$\vec \rho$ was determined by a modified $\chi^2$
 minimization program. See \ref{cWLS}.}. Otherwise, it changed the seed of the pseudorandom generator and
 started again the MC. The routine ended if at a given number of operators, more
 than a certain number of repetitions was achieved, thus avoiding waste of CPU
-time.
+time. To avoid considering solutions with smaller $\Delta^*$ at each iteration,
+we added the explicit condition of letting the number of zero entries in $\vec
+\rho$ increase at most in one from run to run. This routine managed to get
+relatively good results up to $l=18$, where it became increasingly difficult to
+satisfy the crossing equations.
 
 
 \section{$\chi^2$ refinement}
@@ -365,16 +374,37 @@ if $\Delta_i<\Delta_{i+1}$) and then running a WLS routine with the remaining
 entries. If this solution still has negative entries, the proccedure is repeated
 until an acceptable $\vec{\rho}$ is obtained.
 
+
+\subsection{Number of Violations (NoV) minimization}
 It is an interesting fact observed in the cases studied so far, that this
 constrained solution doesn't satisfy crossing with the error estimate
 corresponding to the original $\Delta^*$, but once we consider the zeros in
 $\vec{\rho}$, which effectively remove higher dimensional operators from the
-OPE, \ref{cross-check} is satisfied.
+OPE, thus reducing $\Delta^*$, \ref{cross-check} is satisfied.
 
 For properly chosen
 points in $z$, not all the inequalties in \ref{cross-check} will be satisfied,
 one can then take this number and try to minimize it with another Monte Carlo
-routine. \emph{I'm still missing consistent results for this part.}
+routine. Concretely, this routine takes the naive $\Delta^*$ and given a certain
+number of $z$-points, it counts for how many of these points are the crossing
+equations are violated (NoV). It also counts how many zero coefficients are there in
+the solution. Then, the optimization proceeds by changing one of the dimensions
+whose corresponding OPE coefficients are not zero and then calculating the NoV
+and the number of zero coefficients again. If both the NoV and the number of
+zero OPE coefficients remain constant or decrease, the move is accepted,
+otherwise it is rejected. The optimization terminates when NoV=0 for two
+different sets of z points or when a certain number of iterations is attained.
+
+\section{State of the art}
+The best routine we have so far starts with 4 operators, uses the logdet routine
+to find an approximate set of dimensions and then takes this as a starting
+condition for a NoV minimization, searching to refine the solution and obtain a
+higher number of non-zero OPE coefficients. To this solution a higher operator
+is appended and this new spectrum is taken as the initial condition of another
+logdet MC. This continues as long as the solution satisfies crossing at every
+point (using the effective $\Delta^*$) and each successive step does not add
+more than one extra zero OPE coefficient. I.e.
+$\mathrm{zeros}(\{\Delta_l'\})\leq \mathrm{zeros}(\{\Delta_l\})+1$.
 
 \section{Summary of results}
 \subsection{Free CFT in 4d}

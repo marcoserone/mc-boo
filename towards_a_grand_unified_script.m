@@ -704,9 +704,45 @@ nits=15 (ConstantArray[100,maxops-minops+1]);
 nits[[1]] = 3000;
 \[Beta]list=Table[1/(2i-2),{i,minops,maxops}];
 sigmaChiList=Table[1/1000,{i,minops,maxops}];
-sigmaChiList[[-2]]=10^(-7/2);
+sigmaChiList[[-3]]=10^(-7/2);
+sigmaChiList[[-2]]=10^(-4);
 sigmaChiList[[-1]]=10^(-4);
 mcIteratorFancySchmancy[1,minops,maxops,\[CapitalDelta]L,\[Beta]list,200,100,54,nits,"testing-fancy-autonomous-sigma",1/10,1/10,3,sigmaChiList]
+
+
+minops=4;
+maxops=10;
+\[CapitalDelta]L=deltaFree[maxops];
+\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] (1+ 1/2);
+\[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (1+ 1/10);
+nits=15 (ConstantArray[100,maxops-minops+1]);
+nits[[1]] = 3000;
+\[Beta]list=Table[1/(2i-2),{i,minops,maxops}];
+sigmaChiList=Table[1/1000,{i,minops,maxops}];
+sigmaChiList[[-3]]=10^(-7/2);
+sigmaChiList[[-2]]=10^(-4);
+sigmaChiList[[-1]]=10^(-9/2);
+ParallelTable[
+mcIteratorFancySchmancy[1,minops,maxops,\[CapitalDelta]L,\[Beta]list,200,100,10+i,nits,"testing-seed"<>ToString[i],1/10,1/10,0,sigmaChiList]//Timing,{i,1,4}]
+
+
+minops=4;
+maxops=12;
+\[CapitalDelta]L=deltaFree[maxops];
+\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] (1+ 1/2);
+\[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (1+ 1/10);
+nits=15 (ConstantArray[100,maxops-minops+1]);
+nits[[1]] = 3000;
+\[Beta]list=Table[1/(2i-2),{i,minops,maxops}];
+sigmaChiList=Table[1/1000,{i,minops,maxops}];
+sigmaChiList[[-6]]=10^(-7/2);
+sigmaChiList[[-5]]=10^(-4);
+sigmaChiList[[-4]]=10^(-9/2);
+sigmaChiList[[-3]]=10^(-5);
+sigmaChiList[[-2]]=10^(-6);
+sigmaChiList[[-1]]=10^(-7);
+ParallelTable[
+mcIteratorFancySchmancy[1,minops,maxops,\[CapitalDelta]L,\[Beta]list,200,100,690+i,nits,"testing-seed"<>ToString[i],1/10,1/10,0,sigmaChiList]//Timing,{i,1,4}]
 
 
 minops=4;
