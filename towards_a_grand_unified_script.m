@@ -384,7 +384,7 @@ $MinPrecision=prec;
   zsample = Sample[Nz,sigmaz,seed]; 
 Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[CapitalDelta]\[Phi] -
         ((1 - zsample[[zv]])*(1 - Conjugate[zsample[[zv]]]))^\[CapitalDelta]\[Phi], {zv, 1, Nz}],prec];
-    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;Length[\[CapitalDelta]L]
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
 
@@ -497,7 +497,7 @@ deltaFree[n_]:={2#,2#-2}&/@Range[1,n,1];
 opeFreeRen[n_]:=(renomFactor[2#])^(-1) 2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
 
 (*PLotters*)
-genLog[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+genLog[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,dcross_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
     \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,gradientLog,func0}, 
     (*precision*)
@@ -511,9 +511,16 @@ Idsample = qQId[\[CapitalDelta]\[Phi],zsample];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
-
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
-logDetFunctional[QQ0,{Idsample}]
+    QQsave=QQ0;
+       Actionnew= logDetFunctional[QQ0,{Idsample}];
+smearedaction=Reap[Table[
+           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
+          Sow[ Log[Det[PP]^2]];
+           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]-dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
+          Sow[ Log[Det[PP]^2]];QQ0=QQsave;,{dimToVary,1,Length[\[CapitalDelta]L]}]];
+ Actionnew =Actionnew +Total[smearedaction[[2]]//Flatten]; 
+Return[Actionnew];
 ];
 
 
@@ -901,7 +908,8 @@ f[x_,y_]:=genLog[x,{{y,0},{2x+2,2},{2x+2,0},{2x+4,2},{2x+4,0}},100,123,6,1/100];
 ContourPlot[f[x,y],{x,3/2,7/4},{y,3-1/10,7/2+1/10}]
 
 
-Plot[genLog[x,\[CapitalDelta]L,100,123,11,1/100],{x,1-1/1000,1+1/1000}]
+\[CapitalDelta]L=deltaFree[4];
+Plot[genLog[x,\[CapitalDelta]L,100,123,5,1/100],{x,1-1/10,1+1/10},PlotRange->All]
 
 
-Length[\[CapitalDelta]L]
+Plot[genLog[x,\[CapitalDelta]L,100,123,11,1/100,1/3]+genLog[x-1/3,\[CapitalDelta]L,100,123,11,1/100,1/3]+genLog[x+1/3,\[CapitalDelta]L,100,123,11,1/100,1/3],{x,1-1/5,1+1/5},PlotRange->All]
