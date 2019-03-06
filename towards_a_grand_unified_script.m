@@ -52,7 +52,7 @@ Return[Log[Det[pp]^2]]];
 (*MC routine*)
 MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]0_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_,opsToVary_]:=Block[{itd, DDldata, sigmaz, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, Nz, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
-    IdsampleEx,zOPE,QQOPE,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,smearedaction,\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0}, 
+    IdsampleEx,zOPE,QQOPE,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,smearedaction,\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]\[Phi]old}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate},WorkingPrecision->prec];
 $MaxPrecision=prec;
@@ -73,6 +73,7 @@ TotD =   Reap[ Do[
 $MinPrecision=prec;
           \[CapitalDelta]LOld=\[CapitalDelta]L;
           QQold=QQ0;  
+          \[CapitalDelta]\[Phi]old=\[CapitalDelta]\[Phi];
 (*putative Unitarity bound
 If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2];*)
 (*let every successive run start by varying only the new operator*)
@@ -106,7 +107,7 @@ smearedaction=Reap[Table[
 
           metcheck = Exp[(-betad)*(Actionnew - Action)];
           rr = RandomReal[{0, 1}];
-          If[metcheck>rr, Action = Actionnew,\[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold];
+          If[metcheck>rr, Action = Actionnew,\[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold;\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]old];
           
 $MinPrecision=10;
    dw=Join[{\[CapitalDelta]\[Phi]},\[CapitalDelta]L[[All,1]]];
@@ -117,7 +118,7 @@ $MinPrecision=3;
 
 (*MC routine-Chi2*)
 MetroGoFixedSelectiveDirChi2[\[CapitalDelta]\[Phi]0_,\[CapitalDelta]LOriginal_,Nz_,Ndit_,prec_,betad_,seed0_,sigmaMC_,dcross_,lmax_,idTag_,sigmaz_,tol_,opsToVary_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
-    zsample, Idsample,  PP0, PP1, lr, nr, Errvect, Factor, Factor0, seed=seed0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    zsample, Idsample,  PP0, PP1, lr, nr, Errvect, Factor, Factor0, seed=seed0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,\[CapitalDelta]\[Phi]old,  
     IdsampleEx,zOPE,QQOPE,converge=False,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,resultsOld,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,errSample,\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,results,nzeros=Length[\[CapitalDelta]LOriginal],fracvio=100,nzerosnew,fracvionew,res,sigmamods=ConstantArray[1,Length[\[CapitalDelta]LOriginal]]}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate},WorkingPrecision->prec];
@@ -153,10 +154,11 @@ fracvio=Count[Abs[res]<1//Thread,False]/Nz;
           converge=True],converge=False];
           \[CapitalDelta]LOld=\[CapitalDelta]L;
           QQold=QQ0; 
+          \[CapitalDelta]\[Phi]old=\[CapitalDelta]\[Phi];
           resultsOld=results; 
 (*This If avoids varying operators which still don't enter the OPE*)
        (*Shift one dimension by a random amount*)       
-            If[it==1,      dimToVary = opsToVary[[RandomInteger[{1,Length[opsToVary]}]]],  dimToVary = opsToVary[[RandomInteger[{1,Length[opsToVary]-nzeros}]]]];
+            If[Length[opsToVary]-nzeros<=0,      dimToVary = opsToVary[[RandomInteger[{1,Length[opsToVary]}]]],  dimToVary = opsToVary[[RandomInteger[{1,Length[opsToVary]-nzeros}]]]];
        (*Shift one dimension by a random amount*)       
          If[dimToVary==0,
          (*Vary external*)
@@ -187,7 +189,7 @@ Print[nzerosnew];
 Print[fracvionew];
 
           If[fracvionew<=fracvio && nzeros>=nzerosnew, Print["Accepted"]; fracvio = fracvionew;nzeros=nzerosnew;sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (101/100),
-          \[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold;   results=resultsOld; sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (99/100)];
+          \[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold;\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]old ;  results=resultsOld; sigmamods[[dimToVary]] =sigmamods[[dimToVary]] (99/100)];
 $MinPrecision=10;
 dw=Join[{\[CapitalDelta]\[Phi]},\[CapitalDelta]L[[All,1]]];
           Sow[ {it, dw,results[[1]], {nzeros,fracvio}}],
@@ -934,7 +936,7 @@ ops=4;
 \[CapitalDelta]L=deltaFree[ops];
 \[CapitalDelta]L[[1;;ops,1]]=\[CapitalDelta]L[[1;;ops,1]] (1+ 1/10);
 \[CapitalDelta]L[[2,1]]=4;
-metroReturnAvg[10/10,100,1000,1/3,\[CapitalDelta]L,444,ops,"var_smaller-d",1/10,{0,1,3,4}]
+metroReturnAvg[101/100,100,5000,1/3,\[CapitalDelta]L,444,ops,"var_smaller-d",1/10,{0,1,3,4}]
 
 
  ops=4;
@@ -944,4 +946,14 @@ metroReturnAvg[10/10,100,1000,1/3,\[CapitalDelta]L,444,ops,"var_smaller-d",1/10,
  metroReturnAvgChi2[11/10,100,1000,300,1,\[CapitalDelta]L,12,ops,"amoaver",1/10,10^(-2),0,{0,1,3,4}]
 
 
-h
+ ops=6;
+\[CapitalDelta]L=deltaFree[ops];
+\[CapitalDelta]L[[1;;ops,1]]=\[CapitalDelta]L[[1;;ops,1]] (1+ 1/10);
+\[CapitalDelta]L[[2,1]]=4;
+ metroReturnAvgChi2[10/10,100,1000,500,1,\[CapitalDelta]L,1562,ops,"amoaver2",1/10,10^(-3),0,{0,1,3,4,5,6}]
+
+
+
+
+
+jj
