@@ -56,7 +56,7 @@ Return[Log[Det[pp]^2]]];
 (*\[CapitalDelta]\[Phi]0_ Initial external dimension, \[CapitalDelta]LOriginal_Initial spectrum, Ndit_Number of Iterations, prec_precision, betad_1/Temperature, seed_ ,sigmaMC_sigma for the MC step, dcross_regularization radius, 
 lmax_order of the highest operator to vary (redundant at this stage), idTag_string for identifying runs, initialOps_ This tells the routine whether to vary all operators from the begining or just let the newly added one vary on its own for a certain number of steps,
 opsToVary_array with the *)
-MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]0_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_,opsToVary_]:=Block[{itd, DDldata, sigmaz, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]0_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_,opsToVary_,sigmaz_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, Nz, PP0, PP1, lr, nr, Errvect, Factor, Factor0, Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,smearedaction,\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]\[Phi]old}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate},WorkingPrecision->prec];
@@ -65,13 +65,16 @@ $MinPrecision=prec;
 
     SeedRandom[seed];
     Nz=Length[\[CapitalDelta]LOriginal]+1;
-  zsample = Sample[Nz,1/100,seed]; 
+  zsample = {Sample[Nz,sigmaz[[1]],seed],Sample[Nz,sigmaz[[2]],seed+1]}; 
+  Print[Dimensions[zsample]];
 Idsample = qQId[\[CapitalDelta]\[Phi], zsample];
+Print[Dimensions[Idsample]];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
 
-    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+    QQ0 = {qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample[[1]]],qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample[[2]]]};
+    Print[Dimensions[QQ0]];
      
     (*Monte Carlo Iteration*)
 TotD =   Reap[ Do[
@@ -87,26 +90,32 @@ If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2
        (*Shift one dimension by a random amount*)       
          If[dimToVary==0,
          (*Vary external*)
-         \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]+ RandomVariate[NormalDistribution[0,sigmaMC/10]];
-         Idsample = qQId[\[CapitalDelta]\[Phi], zsample];
-         QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];,
+         \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]+ RandomVariate[NormalDistribution[0,sigmaMC/2]];
+         Idsample = qQId[\[CapitalDelta]\[Phi], zsample];    
+         QQ0[[1]] = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample[[1]]];
+    QQ0[[2]] = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample[[2]]];,
          (*Vary exchanged*)
           \[CapitalDelta]L[[dimToVary,1]] = \[CapitalDelta]L[[dimToVary,1]]+ RandomVariate[NormalDistribution[0,sigmaMC]];
           If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2];
-          QQ0[[dimToVary]] = qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],zsample];];
+          QQ0[[1]][[dimToVary]] = qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],zsample[[1]]];
+          
+          QQ0[[2]][[dimToVary]] = qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],zsample[[2]]];];
 (*Reevaluate coefficients*)
            
           
     (*Coefficients for LES and action thence*)
-          PP = Join[QQ0, {Idsample}]; QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
-          Actionnew = Log[Det[PP]^2]; 
+          PP= {Join[QQ0[[1]], {Idsample[[1]]}],         Join[QQ0[[2]], {Idsample[[2]]}]}; 
+          Actionnew = Log[Det[PP[[1]]]^2] + Log[Det[PP[[2]]]^2]; 
 QQsave=QQ0;
 (*Brot noch schmieren? *)
 smearedaction=Reap[Table[
-           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
-          Sow[ Log[Det[PP]^2]];
-           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]-dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
-          Sow[ Log[Det[PP]^2]];QQ0=QQsave;,{dimToVary,1,lmax}]];
+           QQ0[[1]][[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample[[1]]];  PP[[1]] = Join[QQ0[[1]], {Idsample[[1]]}]; 
+           QQ0[[2]][[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample[[2]]];  PP[[1]] = Join[QQ0[[2]], {Idsample[[2]]}]; 
+          Sow[ Log[Det[PP[[1]]]^2] + Log[Det[PP[[2]]]^2]];         
+            QQ0[[1]][[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]-dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample[[1]]];  PP[[1]] = Join[QQ0[[1]], {Idsample[[1]]}]; 
+           QQ0[[2]][[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]-dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample[[2]]];  PP[[1]] = Join[QQ0[[2]], {Idsample[[2]]}]; 
+          Sow[ Log[Det[PP[[1]]]^2] + Log[Det[PP[[2]]]^2]];QQ0=QQsave,
+          {dimToVary,1,lmax}]];
 
  Actionnew =Actionnew +Total[smearedaction[[2]]//Flatten] ;
          
@@ -228,8 +237,8 @@ r=(qq0.rhovec-id);
 s=r.w.r;
 Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2), Sqrt[s/nu]}];
 ]
-metroReturnAvg[\[CapitalDelta]\[Phi]_,prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_,sigmaMC_,opsToVary_]:=Block[{data,exact=Join[{1},deltaFree[Length[\[CapitalDelta]L]][[;;,1]]]},
-MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi],\[CapitalDelta]L,nit,prec,\[Beta],seed,sigmaMC,1/3,Length[\[CapitalDelta]L],ToString[Length[\[CapitalDelta]L]]<>idtag,initialOps,opsToVary];
+metroReturnAvg[\[CapitalDelta]\[Phi]_,prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_,sigmaMC_,opsToVary_,sigmaz_]:=Block[{data,exact=Join[{1},deltaFree[Length[\[CapitalDelta]L]][[;;,1]]]},
+MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi],\[CapitalDelta]L,nit,prec,\[Beta],seed,sigmaMC,1/3,Length[\[CapitalDelta]L],ToString[Length[\[CapitalDelta]L]]<>idtag,initialOps,opsToVary,sigmaz];
 data= Get["Res-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>idtag<>".txt"];
 Export["Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>idtag<>".pdf",ListPlot[Table[data[[All,2]][[All,i]],{i,1,Length[\[CapitalDelta]L]+1}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->Join[{"ext"},\[CapitalDelta]L[[;;,2]]],PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
 Export["rel-error-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>idtag<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,Length[\[CapitalDelta]L]+1}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->Join[{"ext"},\[CapitalDelta]L[[;;,2]]],PlotRange->All,PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
@@ -934,7 +943,17 @@ ContourPlot[f[x,y],{x,3/2,7/4},{y,3-1/10,7/2+1/10}]
 
 
 \[CapitalDelta]L=deltaFree[4];
-Plot[genLog[x,\[CapitalDelta]L,100,123,5,1/100],{x,1-1/10,1+1/10},PlotRange->All]
+Plot[genLog[x,\[CapitalDelta]L,100,123,5,1/100,1/3]+genLog[x-1/3,\[CapitalDelta]L,100,123,5,1/100,1/3]+genLog[x+1/3,\[CapitalDelta]L,100,123,5,1/100,1/3],{x,0,2},PlotRange->All]
+
+
+ops=10;
+\[CapitalDelta]L=deltaFree[ops];
+Plot[genLog[x,\[CapitalDelta]L,100,123,ops+1,1/100,1/3],{x,0,2},PlotRange->All]
+
+
+ops=10;
+\[CapitalDelta]L=deltaFree[ops];
+Plot[genLog[x,\[CapitalDelta]L,100,123,ops+1,1/10,1/3],{x,0,2},PlotRange->All]
 
 
 Plot[genLog[x,\[CapitalDelta]L,100,123,11,1/100,1/3]+genLog[x-1/3,\[CapitalDelta]L,100,123,11,1/100,1/3]+genLog[x+1/3,\[CapitalDelta]L,100,123,11,1/100,1/3],{x,1-1/5,1+1/5},PlotRange->All]
@@ -958,20 +977,46 @@ metroReturnAvg[(132+2j)/100,100,500,1/3,\[CapitalDelta]L,433i,ops,"var_smaller-d
 \[CapitalDelta]0={{1.789774094691055416085529247810831323634803587320569253152758301727872153808068519554052882773873738`100.,1.78906299321541646433362000219275977989315697492224272518790706626029979003093571762174208369391017`100.,1.788842351699641197037721584831857505577383663988898270867234073333014294938735682079599022853748759`100.,1.793281294902012941701857872897648723248627903342977864207166108512837436936395629662461406443717471`100.,1.789873036222850863582178281188195223895123385603781499674320445281756023345182506272434756236556298`100.,1.789195919974158784937073008772110484880971662220071918288978961073554384232245562380744960438935039`100.},{1.793804212979880956690018788112996930448806134632435209043743890173328937574973956820928021129020984`100.,1.791311001323192335176181722494074778026141669139086280120402117444725829055244564832259461276735362`100.,1.79271379304105709084386035662175351260556546109175488823005177596017100870556570577542167693713696`100.,1.791442524569980996364179379811378413569783687963511068727648929889027438545005114231601451769498199`100.,1.638228260771591931665884903318126722998038356954315866340134314472711753442499875246493437840217608`100.,1.791520338174535915281087771139244626310259778947695554893435807574017483415215594335926844880739714`100.},{1.789851256435161827103170835335120359259039011765238575164457640245909367163546052851743223539935377`100.,1.789597497896943759864323965725982271696659273794395215371341880608890695668218599919084318892566362`100.,1.789136651427685885305716764368566892329838323544553534825196676504329235383527792671175885193274359`100.,1.789841315620759076372732147494827614618932305194031928340890623610680168323979085254656723839919101`100.,1.790295752076915085340523011610165859403971447749729859182864388153901556956489099152489114637437449`100.,1.789811479930626157427540419456578400159047537702608761208733475295320485409543259373294278813999269`100.},{1.788574198528809137602901607511492756958976159712745458913045928796111491752970047348911190304304988`100.,1.793134015341897396982923418618256270141500887178714558068203288282874892524353765915852456591590014`100.,1.637933576774804640434707061358077725516557193715150458823344346862987932580643230718540618384615747`100.,1.637977792602548164448111010179055217512667144840695508235722800937052896464472040506860237774111342`100.,1.791715616875078407065550069009368494228165045152980321789016009508230536923104039964919033433020447`100.,1.791316294051550615112614411820260455186484825079029319699611518920884756512010534371266771686637668`100.}}//Mean//Mean;
 
 
-ops=8;
+ops=4;
 \[CapitalDelta]L=deltaFree[ops];
+\[CapitalDelta]L[[1;;ops,1]]=\[CapitalDelta]L[[1;;ops,1]] (1+ 3/10);
 \[CapitalDelta]L[[2,1]]=4;
-metroReturnAvg[\[CapitalDelta]0,100,1000,1/3,\[CapitalDelta]L,433,ops,"wutup",1/10,{0,1,3,4,5,6,7,8}]
+metroReturnAvg[11/10,100,1000,1/8,\[CapitalDelta]L,439,ops,"testing_double_sigma",1/10,{0,1,3,4},{1/100,3/2}]
 
 
- ops=6;
-\[CapitalDelta]L=deltaFree[ops];
+ ops=4;
+\[CapitalDelta]L=deltaFree[ops];[[1]]
 \[CapitalDelta]L[[1;;ops,1]]=\[CapitalDelta]L[[1;;ops,1]] (1+ 1/10);
 \[CapitalDelta]L[[2,1]]=4;
- metroReturnAvgChi2[10/10,100,1000,500,1,\[CapitalDelta]L,1562,ops,"amoaver2",1/10,10^(-3),0,{0,1,3,4,5,6}]
+ metroReturnAvgChi2[11/10,100,1000,500,1,\[CapitalDelta]L,1562,ops,"amoaver2",1/10,10^(-3),0,{0,1,3,4},{1/100,2}]
 
 
 
 
 
-jj
+\[CapitalDelta]L=deltaFree[4];
+
+
+\[CapitalDelta]L=deltaFree[4];
+aaa10=ParallelTable[\[CapitalDelta]L[[1,1]]=y/100;{x/100,y/100,genLog[x/100,\[CapitalDelta]L,100,123,5,1/100,1/3]+genLog[x/100,\[CapitalDelta]L,100,123,5,2,1/3]},{x,1,200},{y,100,300}];
+
+
+aaa//Dimensions[[1]]
+
+
+bbb//Dimensions
+
+
+Export["ext_and_scalar_landscp-smeared.csv",Flatten[aaa10,1]]
+
+
+ListPlot3D[Flatten[aaa10,1]]
+
+
+
+
+
+[[1]]
+
+
+qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample[[1]]]
