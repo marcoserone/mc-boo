@@ -675,18 +675,6 @@ spinAppender[\[CapitalDelta]_]:=Transpose[{\[CapitalDelta],Range[0,2Length[\[Cap
 
 
 
-ParallelTable[
-SetOptions[RandomReal,WorkingPrecision->100];
-\[CapitalDelta]L=deltaFree[9];
-SeedRandom[i];
-a=RandomReal[{-i/100,i/100},9];
-\[CapitalDelta]L[[;;,1]]=\[CapitalDelta]L[[;;,1]] (1+ a);
-\[CapitalDelta]L,{i,{11,22}}]//N
-
-
-{1.379460672341614541126757609155963632648672389830295555233207442338073654107912811361808238946515322`100., 0.1113274282712459247912223307825241984052015034239516144952736706663438543502753665549145365036934544`100., 0.003741486696958425059953802468684454274250888295215825231565461941576839849636364269384562605119802088`100., 0.000239699144124181086829463377543380165992067274978875512173202298397121225670616859324548647620585437`100., 0, 0, 0, 0, 0}//N
-
-
 opeFreeRen[9]//N
 
 
@@ -1033,8 +1021,18 @@ Minors[faaarkbig,10]^2//Log//Total
 
 ops=4;
 \[CapitalDelta]L=deltaFree[ops];
-\[CapitalDelta]L[[1;;ops,1]]=\[CapitalDelta]L[[1;;ops,1]] (1+ 3/10);
-ParallelTable[metroReturnAvg[10/10,100,3000,1/(5(Binomial[5+i,ops+1])),\[CapitalDelta]L,439,ops,"testing_double_sigma-i="<>ToString[i],1/10,{1,2,3,4},{1/100,1/100},{5,i}],{i,1,4}]
+\[CapitalDelta]L[[1;;ops,1]]=\[CapitalDelta]L[[1;;ops,1]] (1+ 4/10);
+Table[metroReturnAvg[10/10,100,4000,1/(5(Binomial[5+i,ops+1])),\[CapitalDelta]L,439,ops,"testing_double_sigma-i="<>ToString[i],1/10,{1,2,3,4},{1/100,1/100},{5,i}],{i,0,4}]
 
 
 
+
+
+selectiveMinors[mat_,elems_]:=
+Det[mat[[elems]]]
+
+
+ops=4;
+\[CapitalDelta]L=deltaFree[ops];
+\[CapitalDelta]L[[1;;ops,1]]=\[CapitalDelta]L[[1;;ops,1]] (1+ 5/10);
+Table[metroReturnAvg[10/10,100,4000,1/25,\[CapitalDelta]L,439,ops,"testing_double_sigma-i="<>ToString[i],1/10,{1,2,3,4},{1/100,1/100+i/4},{5,1}]//Timing,{i,0,8}]
