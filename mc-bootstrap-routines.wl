@@ -92,7 +92,9 @@ $MinPrecision=prec;
 (*putative Unitarity bound
 If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2];*)
 (*let every successive run start by varying only the new operator*)
-        If[it<Ndit/10&& nops!=initialOps,dimToVary=Nz-1,  dimToVary = opsToVary[[RandomInteger[{1,Length[opsToVary]}]]]];
+        If[it<Ndit/10&& nops!=initialOps, 
+        dimToVary=opsToVary[[-1]],  
+        dimToVary = opsToVary[[RandomInteger[{1,Length[opsToVary]}]]]];
        (*Shift one dimension by a random amount*)       
          If[dimToVary==0,
          (*Vary external*)
@@ -682,7 +684,6 @@ maxops=10;
 \[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (1+ 1/10);
 nits=15 (ConstantArray[100,maxops-minops+1]);
 nits[[1]] = 3000;
-\[Beta]list=Table[1/((2i-4)(i-2)),{i,minops,maxops}];
 sigmaChiList=Table[1/1000,{i,minops,maxops}];
 sigmaChiList[[-3]]=10^(-7/2);
 sigmaChiList[[-2]]=10^(-4);
@@ -690,8 +691,10 @@ sigmaChiList[[-1]]=10^(-4);
 opsToVary=Table[Range[1,opa],{opa,minops,maxops}];
 sigmaz=Table[{1/100,1/100},{opa,minops,maxops}];
 Nz=Table[{5,opa},{opa,minops,maxops}];
-elems=Table[Table[RandomSample[Range[5+opa],opa+1],{i,1,opa-2}],{opa,minops,maxops}];
-mcIteratorFullThing[1,minops,maxops,\[CapitalDelta]L,\[Beta]list,135,100,69,nits,"testingtesting",1/10,1/10,0,sigmaChiList,opsToVary,sigmaz,Nz,elems]
+elems=Table[Table[RandomSample[Range[5+opa],opa+1],{i,1,opa}],{opa,minops,maxops}];
+ParallelTable[
+\[Beta]list=Table[1/((2i-6+temps)(i)),{i,minops,maxops}];
+mcIteratorFullThing[1,minops,maxops,\[CapitalDelta]L,\[Beta]list,135,100,69,nits,"testingtesting",1/10,1/10,0,sigmaChiList,opsToVary,sigmaz,Nz,elems],{temps,1,6}]
 
 
 
