@@ -340,17 +340,21 @@ Print["Rejected"];seed=seed+finalOps;repCount=repCount+1,Print["Andato_a"];Break
 Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
 ]
 
-mcIteratorFullThing[\[CapitalDelta]\[Phi]_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,sigmaChi_,opsToVary_,sigmazLogDet_,nzLogDet_,elems_]:=
-Block[{\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps},
+mcIteratorFullThing[\[CapitalDelta]\[Phi]0_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,sigmaChi_,opsToVary_,sigmazLogDet_,nzLogDet_,elems_]:=
+Block[{\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps,holdMyBeer},
 it=initialOps;
 
 SetOptions[RandomReal,WorkingPrecision->100];
 results=Reap[
 While[it<=finalOps,
-\[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]]]][[1]][[2;;-1]];
+holdMyBeer=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]]]][[1]];
+\[CapitalDelta]L[[1;;it,1]]=holdMyBeer[[2;;-1]];
+\[CapitalDelta]\[Phi]=holdMyBeer[[1]];
 checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]];
 Print[checks[[2;;3]]];
-\[CapitalDelta]L[[1;;it,1]]=Sow[metroReturnAvgChi2[\[CapitalDelta]\[Phi],prec,nits[[it-initialOps+1]],nz,1,\[CapitalDelta]L[[1;;it]],seed+2it,initialOps,runid,sigmaz,sigmaChi[[it-initialOps+1]],0,opsToVary[[it-initialOps+1]]]][[1]][[2;;-1]];
+holdMyBeer=Sow[metroReturnAvgChi2[\[CapitalDelta]\[Phi],prec,nits[[it-initialOps+1]],nz,1,\[CapitalDelta]L[[1;;it]],seed+2it,initialOps,runid,sigmaz,sigmaChi[[it-initialOps+1]],0,opsToVary[[it-initialOps+1]]]][[1]];
+\[CapitalDelta]L[[1;;it,1]]=holdMyBeer[[2;;-1]];
+\[CapitalDelta]\[Phi]=holdMyBeer[[1]];
 checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]];
 Print[checks[[2;;3]]];
 
@@ -703,44 +707,57 @@ chi2Functional[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz],
 ];
 
 
-(*
+(* Fullthing Tester
+*)
 minops=4;
-maxops=10;
+maxops=7;
 \[CapitalDelta]L=deltaFree[maxops];
 \[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] (1+ 1/2);
 \[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (1+ 1/10);
-nits=15 (ConstantArray[100,maxops-minops+1]);
-nits[[1]] = 3000;
+\[CapitalDelta]L[[2,1]]=4;
+nits=1 (ConstantArray[100,maxops-minops+1]);
+nits[[1]] = 50;
 sigmaChiList=Table[1/1000,{i,minops,maxops}];
-sigmaChiList[[-3]]=10^(-7/2);
-sigmaChiList[[-2]]=10^(-4);
-sigmaChiList[[-1]]=10^(-4);
-opsToVary=Table[Range[1,opa],{opa,minops,maxops}];
-sigmaz=Table[{1/100,1/100},{opa,minops,maxops}];
+opsToVary=Table[Drop[Range[0,opa],{3}],{opa,minops,maxops}];
+sigmaz=Table[{opa/20,opa/20},{opa,minops,maxops}];
 Nz=Table[{5,opa},{opa,minops,maxops}];
 elems=Table[Table[RandomSample[Range[5+opa],opa+1],{i,1,opa}],{opa,minops,maxops}];
 ParallelTable[
 \[Beta]list=Table[1/((2i-6+temps)(i)),{i,minops,maxops}];
-mcIteratorFullThing[1,minops,maxops,\[CapitalDelta]L,\[Beta]list,135,100,2229+10temps,nits,"testingtesting-temps="<>ToString[temps],1/10,1/10,0,sigmaChiList,opsToVary,sigmaz,Nz,elems],{temps,1,4}]
-*)
+mcIteratorFullThing[11/10,minops,maxops,\[CapitalDelta]L,\[Beta]list,135,100,29+10temps,nits,"testingtesting-external-temps="<>ToString[temps],1/10,1/10,0,sigmaChiList,opsToVary,sigmaz,Nz,elems],{temps,1,4}]
 
-(*
+
+(* Plotting 
+
 files = {
-"uluviano/Res-fixed_Param_Nit=3000prec=100beta=0.00400sigmaMC=0.100dcross=0seed=14id=whatsgoinon-100-t={4}.txt",
-"uluviano/Res-fixed_Param_Nit=3000prec=100beta=0.00500sigmaMC=0.100dcross=0seed=12id=whatsgoinon-100-t={3}.txt",
-"uluviano/Res-fixed_Param_Nit=3000prec=100beta=0.00667sigmaMC=0.100dcross=0seed=10id=whatsgoinon-100-t={2}.txt",
-"uluviano/Res-fixed_Param_Nit=3000prec=100beta=0.0100sigmaMC=0.100dcross=0seed=8id=whatsgoinon-100-t={1}.txt",
-"uluviano/Res-fixed_Param_Nit=3000prec=100beta=0.0200sigmaMC=0.100dcross=0seed=14id=print-test-100-t={4}.txt",
-"uluviano/Res-fixed_Param_Nit=3000prec=100beta=0.0250sigmaMC=0.100dcross=0seed=12id=print-test-100-t={3}.txt",
-"uluviano/Res-fixed_Param_Nit=3000prec=100beta=0.0333sigmaMC=0.100dcross=0seed=10id=print-test-100-t={2}.txt",
-"uluviano/Res-fixed_Param_Nit=3000prec=100beta=0.0500sigmaMC=0.100dcross=0seed=8id=print-test-100-t={1}.txt",
-"uluviano/Res-fixed_Param_Nit=4000prec=100beta=0.0417sigmaMC=0.100dcross=0.333seed=4044id=4testingtesting-temps=4.txt",
-"uluviano/Res-fixed_Param_Nit=4000prec=100beta=0.0500sigmaMC=0.100dcross=0.333seed=4034id=4testingtesting-temps=3.txt",
-"uluviano/Res-fixed_Param_Nit=4000prec=100beta=0.0625sigmaMC=0.100dcross=0.333seed=4024id=4testingtesting-temps=2.txt",
-"uluviano/Res-fixed_Param_Nit=4000prec=100beta=0.0833sigmaMC=0.100dcross=0.333seed=4014id=4testingtesting-temps=1.txt"
+"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=61Nz=135id=testingtesting-external-temps=2.txt",
+"Res-fixed_Param_Nit=500Nz={5, 6}prec=100beta=0.0208sigmaMC=0.100dcross=0.333seed=55id=6testingtesting-external-temps=2.txt",
+"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=59Nz=135id=testingtesting-external-temps=2.txt",
+"Res-fixed_Param_Nit=500Nz={5, 5}prec=100beta=0.0333sigmaMC=0.100dcross=0.333seed=54id=5testingtesting-external-temps=2.txt",
+"averages_n_checksfrom4to6testingtesting-external-temps=4prec=100seed=69nz=135.txt",
+"Res-chi_Param_Nit=1000prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=77Nz=135id=testingtesting-external-temps=4.txt",
+"Res-fixed_Param_Nit=1000Nz={5, 4}prec=100beta=0.0417sigmaMC=0.100dcross=0.333seed=73id=4testingtesting-external-temps=4.txt",
+"Res-chi_Param_Nit=1000prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=57Nz=135id=testingtesting-external-temps=2.txt",
+"Res-fixed_Param_Nit=1000Nz={5, 4}prec=100beta=0.0625sigmaMC=0.100dcross=0.333seed=53id=4testingtesting-external-temps=2.txt",
+"averages_n_checksfrom4to6testingtesting-external-temps=3prec=100seed=59nz=135.txt",
+"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=71Nz=135id=testingtesting-external-temps=3.txt",
+"averages_n_checksfrom4to6testingtesting-external-temps=1prec=100seed=39nz=135.txt",
+"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=51Nz=135id=testingtesting-external-temps=1.txt",
+"Res-fixed_Param_Nit=500Nz={5, 6}prec=100beta=0.0185sigmaMC=0.100dcross=0.333seed=65id=6testingtesting-external-temps=3.txt",
+"Res-fixed_Param_Nit=500Nz={5, 6}prec=100beta=0.0238sigmaMC=0.100dcross=0.333seed=45id=6testingtesting-external-temps=1.txt",
+"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=69Nz=135id=testingtesting-external-temps=3.txt",
+"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=49Nz=135id=testingtesting-external-temps=1.txt",
+"Res-fixed_Param_Nit=500Nz={5, 5}prec=100beta=0.0286sigmaMC=0.100dcross=0.333seed=64id=5testingtesting-external-temps=3.txt",
+"Res-fixed_Param_Nit=500Nz={5, 5}prec=100beta=0.0400sigmaMC=0.100dcross=0.333seed=44id=5testingtesting-external-temps=1.txt",
+"Res-chi_Param_Nit=1000prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=67Nz=135id=testingtesting-external-temps=3.txt",
+"Res-chi_Param_Nit=1000prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=47Nz=135id=testingtesting-external-temps=1.txt",
+"Res-fixed_Param_Nit=1000Nz={5, 4}prec=100beta=0.0500sigmaMC=0.100dcross=0.333seed=63id=4testingtesting-external-temps=3.txt",
+"Res-fixed_Param_Nit=1000Nz={5, 4}prec=100beta=0.0833sigmaMC=0.100dcross=0.333seed=43id=4testingtesting-external-temps=1.txt"
 };
 logdetPlotnAv[#]&/@files
 *)
+
+(* multipoint tester
 
 ops=4;
 a=
@@ -751,4 +768,5 @@ nz=20;
 elemss=Table[Range[1+5j-5,5j],{j,1,nz/5}];
 MetroGoFixedSelectiveDir[1,\[CapitalDelta]L,2000,100,1/(2(2+t)),61+2t,1/10,0,4,"print-test-800-5-t="<>ToString[{t}],4,{1,2,3,4},{1/5,1/5},{nz-10,10},elemss]//Timing ,{t,1,6}];
 Print[a];
+*)
 
