@@ -60,10 +60,13 @@ Det[mat[[elems]]];
 spinAppender[\[CapitalDelta]_]:=Transpose[{\[CapitalDelta],Range[0,2Length[\[CapitalDelta]] -2,2]}];
 
 (*MC routine*)
+
 (*\[CapitalDelta]\[Phi]0_ Initial external dimension, \[CapitalDelta]LOriginal_Initial spectrum, Ndit_Number of Iterations, prec_precision, betad_1/Temperature, seed_ ,sigmaMC_sigma for the MC step, dcross_regularization radius, 
 lmax_order of the highest operator to vary (redundant at this stage), idTag_string for identifying runs, initialOps_ This tells the routine whether to vary all operators from the begining or just let the newly added one vary on its own for a certain number of steps,
 opsToVary_array with the *)
-MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]0_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_,opsToVary_,sigmaz_,Nz_,elems_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+
+MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]0_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_,opsToVary_,sigmaz_,Nz_,elems_]:=
+Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, PP0, PP1, lr, nr, Errvect, nAccept=0,nReject=0,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,smearedaction,\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]\[Phi]old,nops=Length[\[CapitalDelta]LOriginal]}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate},WorkingPrecision->prec];
@@ -115,6 +118,7 @@ If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2
          
 QQsave=QQ0;
 (*Brot noch schmieren? *)
+If[dcross!=0,
 smearedaction=Reap[Table[
            QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
           Sow[ Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total ];
@@ -123,7 +127,8 @@ smearedaction=Reap[Table[
           QQ0=QQsave,
           {dimToVary,1,lmax}]];
 
- Actionnew =Actionnew +Total[smearedaction[[2]]//Flatten] ;
+ Actionnew =Actionnew +Total[smearedaction[[2]]//Flatten] 
+ ];
          
           metcheck = Exp[(-betad)*(Actionnew - Action)];
           rr = RandomReal[{0, 1}];
@@ -719,6 +724,7 @@ ParallelTable[
 mcIteratorFullThing[1,minops,maxops,\[CapitalDelta]L,\[Beta]list,135,100,2229+10temps,nits,"testingtesting-temps="<>ToString[temps],1/10,1/10,0,sigmaChiList,opsToVary,sigmaz,Nz,elems],{temps,1,4}]
 *)
 
+(*
 files = {
 "uluviano/Res-fixed_Param_Nit=3000prec=100beta=0.00400sigmaMC=0.100dcross=0seed=14id=whatsgoinon-100-t={4}.txt",
 "uluviano/Res-fixed_Param_Nit=3000prec=100beta=0.00500sigmaMC=0.100dcross=0seed=12id=whatsgoinon-100-t={3}.txt",
@@ -734,3 +740,15 @@ files = {
 "uluviano/Res-fixed_Param_Nit=4000prec=100beta=0.0833sigmaMC=0.100dcross=0.333seed=4014id=4testingtesting-temps=1.txt"
 };
 logdetPlotnAv[#]&/@files
+*)
+
+ops=4;
+a=
+ParallelTable[
+nz=20;
+\[CapitalDelta]L=deltaFree[ops];
+\[CapitalDelta]L[[1;;ops,1]]=\[CapitalDelta]L[[1;;ops,1]] (1+ 2/10);
+elemss=Table[Range[1+5j-5,5j],{j,1,nz/5}];
+MetroGoFixedSelectiveDir[1,\[CapitalDelta]L,2000,100,1/(2(2+t)),61+2t,1/10,0,4,"print-test-800-5-t="<>ToString[{t}],4,{1,2,3,4},{1/5,1/5},{nz-10,10},elemss]//Timing ,{t,1,6}];
+Print[a];
+
