@@ -65,7 +65,7 @@ spinAppender[\[CapitalDelta]_]:=Transpose[{\[CapitalDelta],Range[0,2Length[\[Cap
 lmax_order of the highest operator to vary (redundant at this stage), idTag_string for identifying runs, initialOps_ This tells the routine whether to vary all operators from the begining or just let the newly added one vary on its own for a certain number of steps,
 opsToVary_array with the *)
 
-MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]0_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_,opsToVary_,sigmaz_,Nz_,elems_]:=
+MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]0_,deltaExtMax_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_,opsToVary_,sigmaz_,Nz_,elems_]:=
 Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, PP0, PP1, lr, nr, Errvect, nAccept=0,nReject=0,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,smearedaction,\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]\[Phi]old,nops=Length[\[CapitalDelta]LOriginal]}, 
     (*precision*)
@@ -102,6 +102,7 @@ If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2
          If[dimToVary==0,
          (*Vary external*)
          \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]+ RandomVariate[NormalDistribution[0,sigmaMC/2]];
+	 If[Abs[\[CapitalDelta]\[Phi]- \[CapitalDelta]\[Phi]0] > deltaExtMax, \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]old;];
          Idsample = qQId[\[CapitalDelta]\[Phi], zsample];    
          QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];,
          (*Vary exchanged*)
@@ -146,7 +147,7 @@ $MinPrecision=3;
       Export["Res-fixed_Param_Nit="<>ToString[Ndit]<>"Nz="<>ToString[Nz]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[betad,3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[dcross,3]]<>"seed="<>ToString[seed]<>"id="<>idTag<>".txt", TotD[[2]]];]
 
 (*MC routine-Chi2*)
-MetroGoFixedSelectiveDirChi2[\[CapitalDelta]\[Phi]0_,\[CapitalDelta]LOriginal_,Nz_,Ndit_,prec_,betad_,seed0_,sigmaMC_,dcross_,lmax_,idTag_,sigmaz_,tol_,opsToVary_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+MetroGoFixedSelectiveDirChi2[\[CapitalDelta]\[Phi]0_,deltaExtMax_,\[CapitalDelta]LOriginal_,Nz_,Ndit_,prec_,betad_,seed0_,sigmaMC_,dcross_,lmax_,idTag_,sigmaz_,tol_,opsToVary_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample,  PP0, PP1, lr, nr, Errvect, Factor, Factor0, seed=seed0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,\[CapitalDelta]\[Phi]old,  
     IdsampleEx,zOPE,QQOPE,converge=False,Calc,coeffTemp,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,resultsOld,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,errSample,\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,results,nzeros=Length[\[CapitalDelta]LOriginal],fracvio=100,nzerosnew,fracvionew,res,sigmamods=ConstantArray[1,Length[\[CapitalDelta]LOriginal]]}, 
     (*precision*)
@@ -192,6 +193,7 @@ fracvio=Count[Abs[res]<1//Thread,False]/Nz;
          If[dimToVary==0,
          (*Vary external*)
          \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi](1+ RandomVariate[NormalDistribution[0,sigmaMC]]);
+	 If[Abs[\[CapitalDelta]\[Phi]- \[CapitalDelta]\[Phi]0] > deltaExtMax, \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]old;];
          Idsample = qQId[\[CapitalDelta]\[Phi], zsample];
          errSample=\[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample,0];
          QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];,
@@ -249,8 +251,8 @@ r=(qq0.rhovec-id);
 s=r.w.r;
 Return[{rhovec,(Diagonal[Inverse[Transpose[qq0].w.qq0]])^(-1/2), Sqrt[s/nu]}];
 ]
-metroReturnAvg[\[CapitalDelta]\[Phi]_,prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_,sigmaMC_,opsToVary_,sigmaz_,nz_,elems_]:=Block[{data,exact=Join[{1},deltaFree[Length[\[CapitalDelta]L]][[;;,1]]]},
-MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi],\[CapitalDelta]L,nit,prec,\[Beta],seed,sigmaMC,1/3,Length[\[CapitalDelta]L],ToString[Length[\[CapitalDelta]L]]<>idtag,initialOps,opsToVary,sigmaz,nz,elems];
+metroReturnAvg[\[CapitalDelta]\[Phi]_,deltaExtMax_,prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_,sigmaMC_,opsToVary_,sigmaz_,nz_,elems_]:=Block[{data,exact=Join[{1},deltaFree[Length[\[CapitalDelta]L]][[;;,1]]]},
+MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi],deltaExtMax,\[CapitalDelta]L,nit,prec,\[Beta],seed,sigmaMC,1/3,Length[\[CapitalDelta]L],ToString[Length[\[CapitalDelta]L]]<>idtag,initialOps,opsToVary,sigmaz,nz,elems];
 data= Get["Res-fixed_Param_Nit="<>ToString[nit]<>"Nz="<>ToString[nz]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>idtag<>".txt"];
 (*Export["Plot-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>idtag<>".pdf",ListPlot[Table[data[[All,2]][[All,i]],{i,1,Length[\[CapitalDelta]L]+1}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->Join[{"ext"},\[CapitalDelta]L[[;;,2]]],PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
 Export["rel-error-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>idtag<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,Length[\[CapitalDelta]L]+1}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->Join[{"ext"},\[CapitalDelta]L[[;;,2]]],PlotRange->All,PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
@@ -258,8 +260,8 @@ Export["zoomed-rel-error-fixed_Param_Nit="<>ToString[nit]<>"prec="<>ToString[pre
 *)
 {Mean[data[[nit-100;;nit,2]]],(*StandardDeviation[data[[nit-100;;nit,2]]],*)data[[-1]]}];
 
-metroReturnAvgChi2[\[CapitalDelta]\[Phi]_,prec_,nit_,Nz_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_,sigmaz_,sigmaMC_,tol_,opsToVary_]:=Block[{data,exact=Join[{1},deltaFree[Length[\[CapitalDelta]L]][[;;,1]]]},
-MetroGoFixedSelectiveDirChi2[\[CapitalDelta]\[Phi],\[CapitalDelta]L,Nz,nit,prec,\[Beta],seed,sigmaMC,1/3,Length[\[CapitalDelta]L],idtag,sigmaz,tol,opsToVary];
+metroReturnAvgChi2[\[CapitalDelta]\[Phi]_,deltaExtMax_,prec_,nit_,Nz_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_,sigmaz_,sigmaMC_,tol_,opsToVary_]:=Block[{data,exact=Join[{1},deltaFree[Length[\[CapitalDelta]L]][[;;,1]]]},
+MetroGoFixedSelectiveDirChi2[\[CapitalDelta]\[Phi],deltaExtMax,\[CapitalDelta]L,Nz,nit,prec,\[Beta],seed,sigmaMC,1/3,Length[\[CapitalDelta]L],idtag,sigmaz,tol,opsToVary];
 data= Get["Res-chi_Param_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"Nz="<>ToString[Nz]<>"id="<>idtag<>".txt"];
 (*Export["rel-error-chi2_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->\[CapitalDelta]L[[;;,2]],PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
 Export["zoomed-rel-error-chi2_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,Length[\[CapitalDelta]L]}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{-1/10,1/10},PlotLegends->\[CapitalDelta]L[[;;,2]],PlotLabel->ToString[Length[\[CapitalDelta]L]]<>"Nit="<>ToString[nit]<>" prec="<>ToString[prec]<>" beta="<>ToString[N[\[Beta],3]]<>" sigmaMC="<>ToString[N[1/10,3]]<>" dcross="<>ToString[N[1/3,3]]<>"seed="<>ToString[seed]]];
@@ -340,19 +342,19 @@ Print["Rejected"];seed=seed+finalOps;repCount=repCount+1,Print["Andato_a"];Break
 Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
 ]
 
-mcIteratorFullThing[\[CapitalDelta]\[Phi]0_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,sigmaChi_,opsToVary_,sigmazLogDet_,nzLogDet_,elems_]:=
+mcIteratorFullThing[\[CapitalDelta]\[Phi]0_,deltaExtMax_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,sigmaChi_,opsToVary_,sigmazLogDet_,nzLogDet_,elems_]:=
 Block[{\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps,holdMyBeer},
 it=initialOps;
 
 SetOptions[RandomReal,WorkingPrecision->100];
 results=Reap[
 While[it<=finalOps,
-holdMyBeer=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]]]][[1]];
+holdMyBeer=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]]]][[1]];
 \[CapitalDelta]L[[1;;it,1]]=holdMyBeer[[2;;-1]];
 \[CapitalDelta]\[Phi]=holdMyBeer[[1]];
 checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]];
 Print[checks[[2;;3]]];
-holdMyBeer=Sow[metroReturnAvgChi2[\[CapitalDelta]\[Phi],prec,nits[[it-initialOps+1]],nz,1,\[CapitalDelta]L[[1;;it]],seed+2it,initialOps,runid,sigmaz,sigmaChi[[it-initialOps+1]],0,opsToVary[[it-initialOps+1]]]][[1]];
+holdMyBeer=Sow[metroReturnAvgChi2[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],nz,1,\[CapitalDelta]L[[1;;it]],seed+2it,initialOps,runid,sigmaz,sigmaChi[[it-initialOps+1]],0,opsToVary[[it-initialOps+1]]]][[1]];
 \[CapitalDelta]L[[1;;it,1]]=holdMyBeer[[2;;-1]];
 \[CapitalDelta]\[Phi]=holdMyBeer[[1]];
 checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]];
@@ -583,12 +585,14 @@ Idsample = qQId[\[CapitalDelta]\[Phi],zsample];
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
     QQsave=QQ0;
        Actionnew= logDetFunctional[QQ0,{Idsample}];
+       If[dcross!=0,
 smearedaction=Reap[Table[
            QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
           Sow[ Log[Det[PP]^2]];
            QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]-dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
           Sow[ Log[Det[PP]^2]];QQ0=QQsave;,{dimToVary,1,Length[\[CapitalDelta]L]}]];
  Actionnew =Actionnew +Total[smearedaction[[2]]//Flatten]; 
+ ];
 Return[Actionnew];
 ];
 
@@ -709,14 +713,15 @@ chi2Functional[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz],
 
 (* Fullthing Tester
 *)
+
 minops=4;
 maxops=7;
 \[CapitalDelta]L=deltaFree[maxops];
 \[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] (1+ 1/2);
 \[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (1+ 1/10);
 \[CapitalDelta]L[[2,1]]=4;
-nits=1 (ConstantArray[100,maxops-minops+1]);
-nits[[1]] = 50;
+nits=2 (ConstantArray[100,maxops-minops+1]);
+nits[[1]] = 300;
 sigmaChiList=Table[1/1000,{i,minops,maxops}];
 opsToVary=Table[Drop[Range[0,opa],{3}],{opa,minops,maxops}];
 sigmaz=Table[{opa/20,opa/20},{opa,minops,maxops}];
@@ -724,38 +729,30 @@ Nz=Table[{5,opa},{opa,minops,maxops}];
 elems=Table[Table[RandomSample[Range[5+opa],opa+1],{i,1,opa}],{opa,minops,maxops}];
 ParallelTable[
 \[Beta]list=Table[1/((2i-6+temps)(i)),{i,minops,maxops}];
-mcIteratorFullThing[11/10,minops,maxops,\[CapitalDelta]L,\[Beta]list,135,100,29+10temps,nits,"testingtesting-external-temps="<>ToString[temps],1/10,1/10,0,sigmaChiList,opsToVary,sigmaz,Nz,elems],{temps,1,4}]
+mcIteratorFullThing[11/10,1/4,minops,maxops,\[CapitalDelta]L,\[Beta]list,135,100,29+10temps,nits,"testingtesting-external-temps="<>ToString[temps],1/10,1/10,0,sigmaChiList,opsToVary,sigmaz,Nz,elems],{temps,1,4}]
 
 
 (* Plotting 
 
 files = {
-"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=61Nz=135id=testingtesting-external-temps=2.txt",
-"Res-fixed_Param_Nit=500Nz={5, 6}prec=100beta=0.0208sigmaMC=0.100dcross=0.333seed=55id=6testingtesting-external-temps=2.txt",
-"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=59Nz=135id=testingtesting-external-temps=2.txt",
-"Res-fixed_Param_Nit=500Nz={5, 5}prec=100beta=0.0333sigmaMC=0.100dcross=0.333seed=54id=5testingtesting-external-temps=2.txt",
-"averages_n_checksfrom4to6testingtesting-external-temps=4prec=100seed=69nz=135.txt",
-"Res-chi_Param_Nit=1000prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=77Nz=135id=testingtesting-external-temps=4.txt",
-"Res-fixed_Param_Nit=1000Nz={5, 4}prec=100beta=0.0417sigmaMC=0.100dcross=0.333seed=73id=4testingtesting-external-temps=4.txt",
-"Res-chi_Param_Nit=1000prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=57Nz=135id=testingtesting-external-temps=2.txt",
-"Res-fixed_Param_Nit=1000Nz={5, 4}prec=100beta=0.0625sigmaMC=0.100dcross=0.333seed=53id=4testingtesting-external-temps=2.txt",
-"averages_n_checksfrom4to6testingtesting-external-temps=3prec=100seed=59nz=135.txt",
-"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=71Nz=135id=testingtesting-external-temps=3.txt",
-"averages_n_checksfrom4to6testingtesting-external-temps=1prec=100seed=39nz=135.txt",
-"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=51Nz=135id=testingtesting-external-temps=1.txt",
-"Res-fixed_Param_Nit=500Nz={5, 6}prec=100beta=0.0185sigmaMC=0.100dcross=0.333seed=65id=6testingtesting-external-temps=3.txt",
-"Res-fixed_Param_Nit=500Nz={5, 6}prec=100beta=0.0238sigmaMC=0.100dcross=0.333seed=45id=6testingtesting-external-temps=1.txt",
-"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=69Nz=135id=testingtesting-external-temps=3.txt",
-"Res-chi_Param_Nit=500prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=49Nz=135id=testingtesting-external-temps=1.txt",
-"Res-fixed_Param_Nit=500Nz={5, 5}prec=100beta=0.0286sigmaMC=0.100dcross=0.333seed=64id=5testingtesting-external-temps=3.txt",
-"Res-fixed_Param_Nit=500Nz={5, 5}prec=100beta=0.0400sigmaMC=0.100dcross=0.333seed=44id=5testingtesting-external-temps=1.txt",
-"Res-chi_Param_Nit=1000prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=67Nz=135id=testingtesting-external-temps=3.txt",
-"Res-chi_Param_Nit=1000prec=100beta=1.00sigmaMC=0.00100dcross=0.333seed=47Nz=135id=testingtesting-external-temps=1.txt",
-"Res-fixed_Param_Nit=1000Nz={5, 4}prec=100beta=0.0500sigmaMC=0.100dcross=0.333seed=63id=4testingtesting-external-temps=3.txt",
-"Res-fixed_Param_Nit=1000Nz={5, 4}prec=100beta=0.0833sigmaMC=0.100dcross=0.333seed=43id=4testingtesting-external-temps=1.txt"
+"datsync/uluviano/Res-fixed_Param_Nit=4000Nz={590, 10}prec=100beta=0.00333sigmaMC=0.100dcross=0seed=6357id=print-test-600-5-t={8}.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=4000Nz={590, 10}prec=100beta=0.00417sigmaMC=0.100dcross=0seed=6353id=print-test-600-5-t={6}.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=3000Nz={700, 100}prec=100beta=0.00417sigmaMC=0.100dcross=0seed=16id=print-test-800-5-t={5}.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=4000Nz={590, 10}prec=100beta=0.00556sigmaMC=0.100dcross=0seed=6349id=print-test-600-5-t={4}.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=4000Nz={590, 10}prec=100beta=0.00833sigmaMC=0.100dcross=0seed=6345id=print-test-600-5-t={2}.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=4000Nz={590, 10}prec=100beta=0.00476sigmaMC=0.100dcross=0seed=6351id=print-test-600-5-t={5}.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=4000Nz={590, 10}prec=100beta=0.00370sigmaMC=0.100dcross=0seed=6355id=print-test-600-5-t={7}.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=4000Nz={590, 10}prec=100beta=0.00667sigmaMC=0.100dcross=0seed=6347id=print-test-600-5-t={3}.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=4000Nz={590, 10}prec=100beta=0.0111sigmaMC=0.100dcross=0seed=6343id=print-test-600-5-t={1}.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=3000Nz={700, 100}prec=100beta=0.00500sigmaMC=0.100dcross=0seed=14id=print-test-800-5-t={4}.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=3000Nz={700, 100}prec=100beta=0.00625sigmaMC=0.100dcross=0seed=12id=print-test-800-5-t={3}.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=3000Nz={700, 100}prec=100beta=0.00357sigmaMC=0.100dcross=0seed=18id=print-test-800-5-t={6}.txt"
 };
 logdetPlotnAv[#]&/@files
+
 *)
+
+
 
 (* multipoint tester
 
@@ -770,3 +767,16 @@ MetroGoFixedSelectiveDir[1,\[CapitalDelta]L,2000,100,1/(2(2+t)),61+2t,1/10,0,4,"
 Print[a];
 *)
 
+(* Landscape fun
+\[CapitalDelta]L=deltaFree[4];
+aaa10=ParallelTable[\[CapitalDelta]L[[1,1]]=y/100;{x/100,y/100,Total@Table[genLog[x/100,\[CapitalDelta]L,100,i,5,1/5,0], {i, 1, 100}]},{x,1,200},{y,100,300}];
+
+
+Export["landscape-nosmear.csv",Flatten[aaa10,1]]
+
+
+Export["landscape-nosmear-500-5.pdf",ListPlot3D[Flatten[aaa10,1]]]
+
+
+
+ListPlot3D[Flatten[aaa10,1]] *)
