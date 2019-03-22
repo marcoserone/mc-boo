@@ -382,9 +382,17 @@ $z-$points, and adjusting the functional to be
 
 \[
 \begin{aligned}
-  S(\{\Delta_i,l_i\})& = \sum_i \log\Det^2\mathcal{M}_i(\{\Delta_i,l_i\};{z_j}_i)\\
+  S(\{\Delta_i,l_i\})& = \sum_i
+  \log\Det^2\mathcal{M}_i(\{\Delta_i,l_i\};\{z_j\}_i),
 \end{aligned}
 \]
+where 
+$i$ runs over a subset of all the subsets of $\{z_i\}_{i=1}^{N_z}$ containing
+exactly $N_{op}+1$ elements.
+
+For $N_z \sim O(400)$, chosen from a normal distribution centered around $z=1/2$
+and with $\sigma =1/5$, one obtains similar or better results than with the
+cross regularization approach.
 
 
 \section{$\chi^2$ refinement}
