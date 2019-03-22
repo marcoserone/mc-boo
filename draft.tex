@@ -286,9 +286,31 @@ in the following section.
 In 2013, \cite{Gliozzi:2013ysa} realized that, for $N_z$ bigger than the number of operators
 one considered in the OPE ($N_{Op}$), \ref{matrix-boo} represented an over-determined
 Linear System. Thus, in order for a solution (that is, a set of OPE coefficients
-satisfying crossing) to exist, each minor should vanish.
+satisfying crossing) to exist, each minor should vanish. More concretely, if one
+is trying to find the dimensions of $N$ operators, one should consider $N$
+different minors, in order to have $N$ trascendental equations and a (hopefully
+non empty)
+set of discrete solutions. Then, the error can be estimated by considering a
+different set of $N$ minors and seeing how much the solutions change. Although
+conceptually clear, this proved to be a major drawback when assesing the
+precision of the results obtained with this method.
+
+Gliozzi's approach gives results for the Lee-Yang edge singularity in $2$, $3$
+and $4$
+dimensions that resemble quite closely the exact ones (for the 2-dimensional
+case) and the numerical results obtained for $D=3,4$.
+
+Drawing inspiration from Gliozzi's work we can posit a functional depending on a
+very big set of $z-$points and all the possible minors thereof. The solutions to
+the crossing equations should then minimize all these determinants.
+
 
 \section{LogDet implementation}
+We now describe the different stages that our Monte Carlo approach followed.
+As a testing ground, we started with the minimum amount of $z-$points. Then, we
+saw the need of regularizing the numerical singularities that this action had.
+We finally implemented an approach that captures Gliozzi's idea of considering
+several minors.
 \subsection{naive approach}
 Given a putative spectrum, the determinant of \ref{matrix-op} (when
 $Nz=N_{Op}+1$)
@@ -353,6 +375,17 @@ we added the explicit condition of letting the number of zero entries in $\vec
 relatively good results up to $l=18$, where it became increasingly difficult to
 satisfy the crossing equations.
 
+\subsection{Multiminor approach}
+Searching to avoid the numerical problems posed by taking only $O(10)$ points from a
+distribution, we expanded our $\mathrm{logDet}$ approach to consider a bigger number of
+$z-$points, and adjusting the functional to be
+
+\[
+\begin{aligned}
+  S(\{\Delta_i,l_i\})& = \sum_i \log\Det^2\mathcal{M}_i(\{\Delta_i,l_i\};{z_j}_i)\\
+\end{aligned}
+\]
+
 
 \section{$\chi^2$ refinement}
 \subsection{cWLS as a way to determine the OPE coefficients}
@@ -383,8 +416,8 @@ $\vec{\rho}$, which effectively remove higher dimensional operators from the
 OPE, thus reducing $\Delta^*$, \ref{cross-check} is satisfied.
 
 For properly chosen
-points in $z$, not all the inequalties in \ref{cross-check} will be satisfied,
-one can then take this number and try to minimize it with another Monte Carlo
+points in $z$, not all the inequalties in \ref{cross-check} will be satisfied.
+One can then take this number and try to minimize it with another Monte Carlo
 routine. Concretely, this routine takes the naive $\Delta^*$ and given a certain
 number of $z$-points, it counts for how many of these points are the crossing
 equations are violated (NoV). It also counts how many zero coefficients are there in
