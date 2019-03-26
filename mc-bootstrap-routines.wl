@@ -713,8 +713,7 @@ chi2Functional[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz],
 ];
 
 
-(* Fullthing Tester
-*)
+(* Fullthing Tester- fit external
 
 minops=4;
 maxops=5;
@@ -734,6 +733,28 @@ ParallelTable[
 \[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}];
 mcIteratorFullThing[11/10,1/8,minops,maxops,\[CapitalDelta]L,\[Beta]list,201,100,29+10temps,nits,"testingtesting-external-temps="<>ToString[temps],1/10,1/10,0,sigmaChiList,opsToVary,sigmaz,Nz,elems,0],{temps,1,4}]
 
+*)
+
+(* Fullthing Tester - External fixed
+*)
+
+minops=4;
+maxops=8;
+nmin=30;
+\[CapitalDelta]L=deltaFree[maxops];
+\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] (1+ 1/2);
+\[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (1+ 1/10);
+\[CapitalDelta]L[[2,1]]=4;
+nits=10 (ConstantArray[100,maxops-minops+1]);
+nits[[1]] = 3000;
+sigmaChiList=Table[1/1000,{i,minops,maxops}];
+opsToVary=Table[Range[1,opa],{opa,minops,maxops}];
+sigmaz=Table[{1/2,1/2},{opa,minops,maxops}];
+Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}];
+elems=Table[Table[Range[1+(opa+1)j-(opa+1),(opa+1)j],{j,1,nmin}],{opa,minops,maxops}];
+ParallelTable[
+\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}];
+mcIteratorFullThing[1,0,minops,maxops,\[CapitalDelta]L,\[Beta]list,201,100,29+10temps,nits,"testingtesting-external-temps="<>ToString[temps],1/10,1/10,0,sigmaChiList,opsToVary,sigmaz,Nz,elems,0],{temps,1,4}]
 
 
 (* Plotting 
