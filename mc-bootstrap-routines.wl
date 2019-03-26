@@ -228,9 +228,10 @@ dw=Join[{\[CapitalDelta]\[Phi]},\[CapitalDelta]L[[All,1]]];
 $MinPrecision=3;
       Export["Res-chi_Param_Nit="<>ToString[Ndit]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[betad,3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[dcross,3]]<>"seed="<>ToString[seed0]<>"Nz="<>ToString[Nz]<>"id="<>idTag<>".txt", TotD[[2]]];]
 
-cweightedLeastSquares[qq0_,id_,w_]:=Block[{rhovec,nu,s,r,n=1,qq0bis},
+cweightedLeastSquares[qq0_,id_,w_]:=Block[{rhovec,nu,s,r,n=1,qq0bis,orgLeng},
 rhovec=Inverse[Transpose[qq0].w.qq0].Transpose[qq0] . w.id;
-nu = Dimensions[w][[1]]-Length[rhovec];
+orgLeng=Length[rhovec];
+nu = Dimensions[w][[1]]-orgLeng;
 r=(qq0.rhovec-id);
 s=r.w.r;
 While[Or@@(rhovec<0//Thread),
@@ -240,10 +241,12 @@ nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0bis.rhovec-id);
 s=r.w.r;n=n+1];
 If[n>1,
-Return[{Join[rhovec,ConstantArray[0,n-1]], Sqrt[s/nu]}],
+If[n-1==orgLeng,Print["Bad Solution"];Return[ConstantArray[0,n-1]];,
+Return[{Join[rhovec,ConstantArray[0,n-1]], Sqrt[s/nu]}]],
 Return[{rhovec, Sqrt[s/nu]}]
 ];
 ]
+
 weightedLeastSquares[qq0_,id_,w_]:=Block[{rhovec,nu,s,r},
 rhovec=Inverse[Transpose[qq0].w.qq0].Transpose[qq0] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
@@ -269,16 +272,22 @@ Export["zoomed-rel-error-chi2_Nit="<>ToString[nit]<>"prec="<>ToString[prec]<>"be
 Return[{data[[-1,2]],data[[-1,3]]}];
 ];
 
+
 (*Plotters*)
-logdetPlotnAv[filename_]:=Block[{data,exact,numDims},
+logdetPlotnAv[filename_]:=Block[{data,exact,numDims,holdMyBeer,\[CapitalDelta]\[Phi],\[CapitalDelta]L},
 data= Get[filename];
 numDims=Length[data[[1,2]]];
 exact=Join[{1},deltaFree[numDims-1][[;;,1]]];
-Export[filename<>"nat-plot"<>".pdf",ListPlot[Table[data[[All,2]][[All,i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->Join[{"ext"},deltaFree[numDims-1][[;;,2]]],PlotLabel->filename]];
-Export[filename<>"rel-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->Join[{"ext"},deltaFree[numDims-1][[;;,2]]],PlotLabel->filename]];
-Export[filename<>"zoomed-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{-1/10,1/10},PlotLegends->Join[{"ext"},deltaFree[numDims-1][[;;,2]]],PlotLabel->filename]];
-{Mean[data[[-100;;-1,2]]],(*StandardDeviation[data[[nit-100;;nit,2]]],*)data[[-1]]}];
-
+\[CapitalDelta]L=deltaFree[numDims-1];
+Export[filename<>"nat-plot"<>".pdf",ListPlot[Table[data[[All,2]][[All,i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->Join[{"ext"},deltaFree[numDims-1][[;;,2]]],PlotLabel->"Full Plot"]];
+Export[filename<>"rel-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->Join[{"ext"},deltaFree[numDims-1][[;;,2]]],PlotLabel->"Relative Error"]];
+Export[filename<>"zoomed-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{-1/10,1/10},PlotLegends->Join[{"ext"},deltaFree[numDims-1][[;;,2]]],PlotLabel->"Relative Error (zoom)"]];
+holdMyBeer=Mean[data[[-100;;-1,2]]];
+\[CapitalDelta]L[[All,1]]=holdMyBeer[[2;;-1]];
+\[CapitalDelta]\[Phi]=holdMyBeer[[1]];
+Print[{\[CapitalDelta]\[Phi],\[CapitalDelta]L}];
+ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L,100,3,150,1/10]
+];
 chi2PlotnAv[filename_]:=Block[{data,exact,numDims},
 data= Get[filename];
 numDims=Length[data[[1,2]]];
