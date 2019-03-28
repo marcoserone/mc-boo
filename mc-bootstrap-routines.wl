@@ -234,16 +234,16 @@ orgLeng=Length[rhovec];
 nu = Dimensions[w][[1]]-orgLeng;
 r=(qq0.rhovec-id);
 s=r.w.r;
-While[Or@@(rhovec<0//Thread),
+While[Or@@(rhovec<0//Thread)&&n<orgLeng,
 Print[rhovec];
 Print[n];
-If[n-1==orgLeng,Print[{"Bad Solution",n,orgLeng}],
 qq0bis=qq0[[;;,1;;-1-n]];
 rhovec=Inverse[Transpose[qq0bis].w.qq0bis].Transpose[qq0bis] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0bis.rhovec-id);
-s=r.w.r;n=n+1];];
-If[n>1,If[n-1==orgLeng,Return[ConstantArray[0,n-1]],
+s=r.w.r;n=n+1];
+Print[{rhovec,n,orgLeng}];
+If[n>1,If[n==orgLeng&&rhovec[[1]]<0,Print["bad OPEs"];Return[ConstantArray[0,n]],
 Return[{Join[rhovec,ConstantArray[0,n-1]], Sqrt[s/nu]}]],
 Return[{rhovec, Sqrt[s/nu]}]
 ];
@@ -328,7 +328,9 @@ nzeros=Count[results[[1]],0];
 
 errSample=\[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1-nzeros,1]],zsample,0];
 res=(results[[1]].QQ0-Idsample)/errSample;
+(*
 Export["histogram-res-dist.pdf",Histogram[res,Round[Nz/50]]];
+*)
 finalcheck=Abs[res]<1//Thread;
 Return[{results,Count[finalcheck,True]/Nz, nzeros}];
 ];
@@ -670,7 +672,9 @@ Idsample = SetPrecision[Table[(zsample[[zv]]*Conjugate[zsample[[zv]]])^\[Capital
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
+  (*
 Export["histogram-res-dist.pdf",Histogram[res,Round[Nz/50]]];
+*)
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
 errSample=Table[ \[Rho]intErrorEstimateFt[\[CapitalDelta]\[Phi],\[CapitalDelta]LOriginal[[-1,1]],zsample[[i]],0],{i,1,Nz}];
 res=(rhovec.QQ0-Idsample)/errSample;
@@ -726,14 +730,15 @@ chi2Functional[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz],
 (* chitester
 
 *)
-minops=4;
-\[CapitalDelta]L=deltaFree[4];
-(*\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] (1+ 1/9);*)
+minops=8;
+maxops=8;
+\[CapitalDelta]L=deltaFree[maxops];
+\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] (1+ 1/10);
 \[CapitalDelta]L[[2,1]]=4;
 nits = 1000;
-nzs=200
+nzs=200;
 opsToVary=Drop[Range[0,maxops],{3}];
-metroReturnAvgChi2[10/10,1/18,100,nits,nzs,1,\[CapitalDelta]L,693,4,"testing_chi",1,1/100,0,opsToVary]
+metroReturnAvgChi2[11/10,1/8,100,nits,nzs,1,\[CapitalDelta]L,693,4,"testing_chi",1,1/100,0,opsToVary]
 
 (* Fullthing Tester- fit external
 
