@@ -235,13 +235,15 @@ nu = Dimensions[w][[1]]-orgLeng;
 r=(qq0.rhovec-id);
 s=r.w.r;
 While[Or@@(rhovec<0//Thread),
+Print[rhovec];
+Print[n];
+If[n-1==orgLeng,Print[{"Bad Solution",n,orgLeng}],
 qq0bis=qq0[[;;,1;;-1-n]];
 rhovec=Inverse[Transpose[qq0bis].w.qq0bis].Transpose[qq0bis] . w.id;
 nu = Dimensions[w][[1]]-Length[rhovec];
 r=(qq0bis.rhovec-id);
-s=r.w.r;n=n+1];
-If[n>1,
-If[n-1==orgLeng,Print["Bad Solution"];Return[ConstantArray[0,n-1]];,
+s=r.w.r;n=n+1];];
+If[n>1,If[n-1==orgLeng,Return[ConstantArray[0,n-1]],
 Return[{Join[rhovec,ConstantArray[0,n-1]], Sqrt[s/nu]}]],
 Return[{rhovec, Sqrt[s/nu]}]
 ];
@@ -721,10 +723,20 @@ results=cweightedLeastSquares[(QQ0//Transpose)/errSample,Idsample/errSample,Iden
 chi2Functional[(QQ0//Transpose)/errSample,Idsample/errSample,IdentityMatrix[Nz],results[[1]]]
 ];
 
+(* chitester
+
+*)
+minops=4;
+\[CapitalDelta]L=deltaFree[4];
+(*\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] (1+ 1/9);*)
+\[CapitalDelta]L[[2,1]]=4;
+nits = 1000;
+nzs=200
+opsToVary=Drop[Range[0,maxops],{3}];
+metroReturnAvgChi2[10/10,1/18,100,nits,nzs,1,\[CapitalDelta]L,693,4,"testing_chi",1,1/100,0,opsToVary]
 
 (* Fullthing Tester- fit external
 
-*)
 minops=4;
 maxops=4;
 nmin=10;
@@ -743,6 +755,7 @@ ParallelTable[
 \[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}];
 mcIteratorFullThing[11/10,1/8,minops,maxops,\[CapitalDelta]L,\[Beta]list,201,100,29+10temps,nits,"testingtesting-external-temps="<>ToString[temps],1/10,1/10,0,sigmaChiList,opsToVary,sigmaz,Nz,elems,0],{temps,1,2}]
 
+*)
 
 (* Fullthing Tester - External fixed
 
