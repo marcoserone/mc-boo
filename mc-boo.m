@@ -768,7 +768,7 @@ fixedExternalWrapper[prec_,nzCheck_,seed_,minops_,maxops_,nmin_,firstNit_,succNi
 elems=Table[Table[Range[1+(opa+1)j-(opa+1),(opa+1)j],{j,1,nmin}],{opa,minops,maxops}],
 Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
 \[CapitalDelta]L=deltaFree[maxops] ,sigmazLogdet=Table[{sigmaz,sigmaz},{opa,minops,maxops}],
-opsToVary=Table[Drop[Range[0,opa],{3}],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
+opsToVary=Table[Range[1,opa],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
 sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
 \[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
 },
