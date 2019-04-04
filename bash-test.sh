@@ -2,18 +2,23 @@
 
 
 
-mkdir fit_external_runs
-cd fit_external_runs
 
-start=1
-for irun in $(seq $start 5)
+start=4
+for irun in $(seq $start 6)
 do
 
-	file="test_$irun.txt"
-	echo " Get["mc-boo.m"]; " > $file
-	echo "ParallelTable[ fitExternalWrapper[100,101,123,4,5,50,3000,1001,3/2,11/10,10^(-3),1,temp/2,1 + $irun/10,1/5,"bin_scan",1/10,1/10,0,0] {temp,5,8} ]" >> $file
+	file="split_$irun.txt"
+	echo " Get[\"mc-boo.m\"]; " > $file
+	echo "fixedExternalWrapperSplit[$irun,100,101,123,4,6,5,200,101,1,11/10,10^(-3),1,1,\"bblb\",1/10,1/10,0,0]" >> $file
 	echo " Exit[]; " >> $file
 	cat $file
 
 done
 
+for irun in $(seq $start 6)
+do
+
+	file="split_$irun.txt"
+	/opt/sissa/sissa-mathematica113/root/bin/math -noprompt -run "<<$file" > Output_split_$irun.txt
+
+done
