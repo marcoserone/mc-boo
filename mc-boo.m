@@ -391,7 +391,7 @@ Block[{\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]L=\[CapitalDe
 SetOptions[RandomReal,WorkingPrecision->100];
 If[it!=initialOps, 
 $MinPrecision=3;
-Get["hold_my_beer_it"<>ToString[it-1]<>ToString[nits[[it-initialOps]]]<>"deltaphi0="<>ToString[N[\[CapitalDelta]\[Phi]0,3]]<>"Nz="<>ToString[nzLogDet[[it-initialOps]]]<>"sigmaz="<>ToString[N[sigmazLogDet[[it-initialOps]],3]]<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt"];
+Get["hold_my_beer_it"<>ToString[it-1]<>ToString[nits[[it-initialOps]]]<>"Nz="<>ToString[nzLogDet[[it-initialOps]]]<>"sigmaz="<>ToString[N[sigmazLogDet[[it-initialOps]],3]]<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"nz="<>ToString[nz]<>".txt"];
 \[CapitalDelta]L[[1;;it-1,1]]=holdMyBeer[[2;;-1]];
 \[CapitalDelta]\[Phi]=holdMyBeer[[1]];
 ];
@@ -411,7 +411,7 @@ Print[checks[[2;;3]]];
 
 nzeros=checks[[3]];
 $MinPrecision=3;
-DumpSave["hold_my_beer_it"<>ToString[it]<>ToString[nits[[it-initialOps+1]]]<>"deltaphi0="<>ToString[N[\[CapitalDelta]\[Phi]0,3]]<>"Nz="<>ToString[nzLogDet[[it-initialOps+1]]]<>"sigmaz="<>ToString[N[sigmazLogDet[[it-initialOps+1]],3]]<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", holdMyBeer];
+DumpSave["hold_my_beer_it"<>ToString[it]<>ToString[nits[[it-initialOps+1]]]<>"Nz="<>ToString[nzLogDet[[it-initialOps+1]]]<>"sigmaz="<>ToString[N[sigmazLogDet[[it-initialOps+1]],3]]<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"nz="<>ToString[nz]<>".txt", holdMyBeer];
 ]
 
 
@@ -816,36 +816,25 @@ fixedExternalWrapper[100,101,123,4,5,5,200,101,3/2,11/10,10^(-3),1,1,"bblb",1/10
 
 
 filesLog = {
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00313sigmaMC=0.100dcross=0seed=127id=4temp_mins8.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00357sigmaMC=0.100dcross=0seed=127id=4temp_mins6.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00385sigmaMC=0.100dcross=0seed=127id=4temp_mins5.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00333sigmaMC=0.100dcross=0seed=127id=4temp_mins7.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 195}sigmaz={1.00, 1.00}prec=100beta=0.00833sigmaMC=0.100dcross=0seed=127id=4temp_mins4.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 195}sigmaz={1.00, 1.00}prec=100beta=0.0100sigmaMC=0.100dcross=0seed=127id=4temp_mins4.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 145}sigmaz={1.00, 1.00}prec=100beta=0.0111sigmaMC=0.100dcross=0seed=127id=4temp_mins3.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 145}sigmaz={1.00, 1.00}prec=100beta=0.0133sigmaMC=0.100dcross=0seed=127id=4temp_mins3.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=200deltaphi0=1.00Nz={5, 195}sigmaz={1.00, 1.00}prec=100beta=0.00833sigmaMC=0.100dcross=0seed=127id=4temp_mins4.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=200deltaphi0=1.00Nz={5, 195}sigmaz={1.00, 1.00}prec=100beta=0.0100sigmaMC=0.100dcross=0seed=127id=4temp_mins4.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=200deltaphi0=1.00Nz={5, 145}sigmaz={1.00, 1.00}prec=100beta=0.0111sigmaMC=0.100dcross=0seed=127id=4temp_mins3.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=200deltaphi0=1.00Nz={5, 145}sigmaz={1.00, 1.00}prec=100beta=0.0133sigmaMC=0.100dcross=0seed=127id=4temp_mins3.txt"
+"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00455sigmaMC=0.100dcross=0seed=1008id=4fixed_split_test_4.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00556sigmaMC=0.100dcross=0seed=1008id=4fixed_split_test_4.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00500sigmaMC=0.100dcross=0seed=1008id=4fixed_split_test_4.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00417sigmaMC=0.100dcross=0seed=1008id=4fixed_split_test_4.txt"
 };
 
 filesChi = {
-"datsync/uluviano/Res-chi_Param_Nit=3000deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=131Nz=101id=temp_mins8.txt",
-"datsync/uluviano/Res-chi_Param_Nit=3000deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=131Nz=101id=temp_mins6.txt",
-"datsync/uluviano/Res-chi_Param_Nit=3000deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=131Nz=101id=temp_mins5.txt",
-"datsync/uluviano/Res-chi_Param_Nit=3000deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=131Nz=101id=temp_mins7.txt",
-"datsync/uluviano/Res-chi_Param_Nit=3000deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=131Nz=101id=temp_mins4.txt",
-"datsync/uluviano/Res-chi_Param_Nit=3000deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=131Nz=101id=temp_mins3.txt",
-"datsync/uluviano/Res-chi_Param_Nit=200deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=131Nz=101id=temp_mins4.txt",
-"datsync/uluviano/Res-chi_Param_Nit=200deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=131Nz=101id=temp_mins3.txt"
+"datsync/uluviano/Res-chi_Param_Nit=3000deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=1012Nz=101id=fixed_split_test_4.txt",
+"datsync/uluviano/Res-chi_Param_Nit=1001deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=133Nz=101id=temp_mins8.txt",
+"datsync/uluviano/Res-chi_Param_Nit=1001deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=133Nz=101id=temp_mins6.txt",
+"datsync/uluviano/Res-chi_Param_Nit=1001deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=133Nz=101id=temp_mins5.txt",
+"datsync/uluviano/Res-chi_Param_Nit=1001deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=133Nz=101id=temp_mins7.txt"
 };
 
 logdetPlotnAv[#]&/@filesLog
 
 chi2PlotnAv[#]&/@filesChi
-*)
 
+*)
 
 
 (* multipoint tester
@@ -890,8 +879,8 @@ nits[[1]] = firstNit;
 mcIteratorSplitThing[it,1,0,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross]
 ]
 
-(*
-fixedExternalWrapperSplit[5,100,101,123,4,5,5,200,101,1,11/10,10^(-3),1,1,"bblb",1/10,1/10,0,0]
+(* TEster
+fixedExternalWrapperSplit[4,100,101,123,4,6,5,200,101,1,11/10,10^(-3),1,1,"bblb",1/10,1/10,0,0]
 
 
 fixedExternalWrapperSplit[5,100,101,123,4,6,5,200,101,1,11/10,10^(-3),1,1,"bblb",1/10,1/10,0,0]
@@ -899,6 +888,5 @@ fixedExternalWrapperSplit[5,100,101,123,4,6,5,200,101,1,11/10,10^(-3),1,1,"bblb"
 
 fixedExternalWrapperSplit[6,100,101,123,4,6,5,200,101,1,11/10,10^(-3),1,1,"bblb",1/10,1/10,0,0]
 *)
-
 
 
