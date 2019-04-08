@@ -1,0 +1,6 @@
+Get["mc-boo.m"];
+
+fitExternalWrapperSplitExtraScalar[5,100,101,123,5,6,80,150,101,1,11/10,5,10^(-3),1,1,11/10,1/9,"quesesto",1/10,1/10,0,0];
+
+fitExternalWrapperSplitExtraScalar[6,100,101,123,5,6,80,150,101,1,11/10,5,10^(-3),1,1,11/10,1/9,"quesesto",1/10,1/10,0,0];
+Exit[];

@@ -812,29 +812,6 @@ mcIteratorFullThing[1,0,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,
 fixedExternalWrapper[100,101,123,4,5,5,200,101,3/2,11/10,10^(-3),1,1,"bblb",1/10,1/10,0,0]
 *)
 
-(* Plotting 
-
-
-filesLog = {
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00455sigmaMC=0.100dcross=0seed=1008id=4fixed_split_test_4.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00556sigmaMC=0.100dcross=0seed=1008id=4fixed_split_test_4.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00500sigmaMC=0.100dcross=0seed=1008id=4fixed_split_test_4.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=3000deltaphi0=1.00Nz={5, 395}sigmaz={1.00, 1.00}prec=100beta=0.00417sigmaMC=0.100dcross=0seed=1008id=4fixed_split_test_4.txt"
-};
-
-filesChi = {
-"datsync/uluviano/Res-chi_Param_Nit=3000deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=1012Nz=101id=fixed_split_test_4.txt",
-"datsync/uluviano/Res-chi_Param_Nit=1001deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=133Nz=101id=temp_mins8.txt",
-"datsync/uluviano/Res-chi_Param_Nit=1001deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=133Nz=101id=temp_mins6.txt",
-"datsync/uluviano/Res-chi_Param_Nit=1001deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=133Nz=101id=temp_mins5.txt",
-"datsync/uluviano/Res-chi_Param_Nit=1001deltaphi0=1.00prec=100beta=1.00sigmaMC=0.0010dcross=0seed=133Nz=101id=temp_mins7.txt"
-};
-
-logdetPlotnAv[#]&/@filesLog
-
-chi2PlotnAv[#]&/@filesChi
-
-*)
 
 
 (* multipoint tester
@@ -878,15 +855,68 @@ sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
 nits[[1]] = firstNit;
 mcIteratorSplitThing[it,1,0,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross]
 ]
+(*Fit external*)
+fitExternalWrapperSplit[it_,prec_,nzCheck_,seed_,minops_,maxops_,nmin_,firstNit_,succNits_,firstOffset_,succOffset_,sigmaChi_,sigmaz_,temps_,deltaext_,deltaextMaxTravel_,idTag_,sigmazCheck_,sigmaMC_,maxReps_,dcross_]:=Block[
+{
+elems=Table[Table[Range[1+(opa+1)j-(opa+1),(opa+1)j],{j,1,nmin}],{opa,minops,maxops}],
+Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
+\[CapitalDelta]L=deltaFree[maxops] ,sigmazLogdet=Table[{sigmaz,sigmaz},{opa,minops,maxops}],
+opsToVary=Table[Drop[Range[0,opa],{3}],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
+sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
+\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
+},
+\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
+\[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (succOffset);
+\[CapitalDelta]L[[2,1]]=4;
+nits[[1]] = firstNit;
+mcIteratorSplitThing[it,deltaext,deltaextMaxTravel,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross]
+]
+
+
+(*general splitter*)
+fitExternalWrapperSplitExtraScalar[it_,prec_,nzCheck_,seed_,minops_,maxops_,nmin_,firstNit_,succNits_,firstOffset_,succOffset_,extraScalarDim_,sigmaChi_,sigmaz_,temps_,deltaext_,deltaextMaxTravel_,idTag_,sigmazCheck_,sigmaMC_,maxReps_,dcross_]:=Block[
+{
+elems=Table[Table[Range[1+(opa+1)j-(opa+1),(opa+1)j],{j,1,nmin}],{opa,minops,maxops}],
+Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
+\[CapitalDelta]L=deltaFree[maxops-1] ,sigmazLogdet=Table[{sigmaz,sigmaz},{opa,minops,maxops}],
+(*now we have to drop the 4th element in order to leave the stress-energy tensor fixed*)
+opsToVary=Table[Drop[Range[0,opa],{4}],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
+sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
+\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
+},
+\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
+\[CapitalDelta]L[[minops+1;;maxops-1,1]]=\[CapitalDelta]L[[minops+1;;maxops-1,1]] (succOffset);
+\[CapitalDelta]L[[2,1]]=4;
+\[CapitalDelta]L = Join[\[CapitalDelta]L, {{extraScalarDim,0}}]//SortBy[#,Last]&;
+nits[[1]] = firstNit;
+mcIteratorSplitThing[it,deltaext,deltaextMaxTravel,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross]
+]
+
+(*general splitter*)
+fixedExternalWrapperSplitExtraScalar[it_,prec_,nzCheck_,seed_,minops_,maxops_,nmin_,firstNit_,succNits_,firstOffset_,succOffset_,extraScalarDim_,sigmaChi_,sigmaz_,temps_,idTag_,sigmazCheck_,sigmaMC_,maxReps_,dcross_]:=Block[
+{
+elems=Table[Table[Range[1+(opa+1)j-(opa+1),(opa+1)j],{j,1,nmin}],{opa,minops,maxops}],
+Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
+\[CapitalDelta]L=deltaFree[maxops-1] ,sigmazLogdet=Table[{sigmaz,sigmaz},{opa,minops,maxops}],
+opsToVary=Table[Range[1,opa],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
+sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
+\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
+},
+\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
+\[CapitalDelta]L[[minops+1;;maxops-1,1]]=\[CapitalDelta]L[[minops+1;;maxops-1,1]] (succOffset);
+\[CapitalDelta]L = Join[\[CapitalDelta]L, {{extraScalarDim,0}}]//SortBy[#,Last]&;
+nits[[1]] = firstNit;
+mcIteratorSplitThing[it,1,0,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross]
+]
 
 (* TEster
-fixedExternalWrapperSplit[4,100,101,123,4,6,5,200,101,1,11/10,10^(-3),1,1,"bblb",1/10,1/10,0,0]
+fitExternalWrapperSplitExtraScalar[4,100,101,123,4,6,5,200,101,1,11/10,5,10^(-3),1,1,11/10,1/9,"bblb",1/10,1/10,0,0]
 
 
-fixedExternalWrapperSplit[5,100,101,123,4,6,5,200,101,1,11/10,10^(-3),1,1,"bblb",1/10,1/10,0,0]
+fitExternalWrapperSplitExtraScalar[5,100,101,123,5,6,5,200,101,1,11/10,5,10^(-3),1,1,11/10,1/9,"quesesto",1/10,1/10,0,0]
 
 
-fixedExternalWrapperSplit[6,100,101,123,4,6,5,200,101,1,11/10,10^(-3),1,1,"bblb",1/10,1/10,0,0]
+fitExternalWrapperSplitExtraScalar[6,100,101,123,5,6,5,200,101,1,11/10,5,10^(-3),1,1,11/10,1/9,"quesesto",1/10,1/10,0,0]
+
+
 *)
-
-
