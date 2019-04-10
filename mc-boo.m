@@ -290,12 +290,36 @@ holdMyBeer=Mean[data[[-100;;-1,2]]];
 Print[{\[CapitalDelta]\[Phi],\[CapitalDelta]L}];
 ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L,100,3,150,1/10]
 ];
+
+logdetPlotnAv[filename_,exact_]:=Block[{data,numDims,holdMyBeer,\[CapitalDelta]\[Phi],\[CapitalDelta]L},
+data= Get[filename];
+numDims=Length[data[[1,2]]];
+\[CapitalDelta]L=deltaFree[numDims-1];
+Export[filename<>"nat-plot"<>".pdf",ListPlot[Table[data[[All,2]][[All,i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->exact[[;;,2]],PlotLabel->"Full Plot"]];
+Export[filename<>"rel-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i,1]])/exact[[i,1]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->exact[[;;,2]],PlotLabel->"Relative Error"]];
+Export[filename<>"zoomed-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i,1]])/exact[[i,1]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{-1/10,1/10},PlotLegends->exact[[;;,2]],PlotLabel->"Relative Error (zoom)"]];
+holdMyBeer=Mean[data[[-100;;-1,2]]];
+\[CapitalDelta]L[[All,1]]=holdMyBeer[[2;;-1]];
+\[CapitalDelta]\[Phi]=holdMyBeer[[1]];
+Print[{\[CapitalDelta]\[Phi],\[CapitalDelta]L}];
+ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L,100,3,150,1/10]
+];
+
 chi2PlotnAv[filename_]:=Block[{data,exact,numDims},
 data= Get[filename];
 numDims=Length[data[[1,2]]];
 exact=Join[{1},deltaFree[numDims-1][[;;,1]]];
 Export[filename<>"rel-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->Join[{"ext"},deltaFree[numDims-1][[;;,2]]],PlotLabel->"Relative Error"]];
 Export[filename<>"zoomed-rel-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{-1/10,1/10},PlotLegends->Join[{"ext"},deltaFree[numDims-1][[;;,2]]],PlotLabel->"Zoomed relative error"]];
+(*{Mean[data[[-100;;-1,2]]],StandardDeviation[data[[-100;;-1,2]]],Mean[data[[-100;;-1,3]]],StandardDeviation[data[[-100;;-1,3]]]}*)
+Return[{data[[-1,2]],data[[-1,3]]}];
+];
+
+chi2PlotnAv[filename_,exact_]:=Block[{data,numDims},
+data= Get[filename];
+numDims=Length[data[[1,2]]];
+Export[filename<>"rel-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i,1]])/exact[[i,1]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->exact[[;;,2]],PlotLabel->"Relative Error"]];
+Export[filename<>"zoomed-rel-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i,1]])/exact[[i,1]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{-1/10,1/10},PlotLegends->exact[[;;,2]],PlotLabel->"Zoomed relative error"]];
 (*{Mean[data[[-100;;-1,2]]],StandardDeviation[data[[-100;;-1,2]]],Mean[data[[-100;;-1,3]]],StandardDeviation[data[[-100;;-1,3]]]}*)
 Return[{data[[-1,2]],data[[-1,3]]}];
 ];

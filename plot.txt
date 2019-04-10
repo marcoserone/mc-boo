@@ -3,17 +3,13 @@ Get["mc-boo.m"];
 
 
 filesLog = {
-"Res-fixed_Param_Nit=101deltaphi0=0.982Nz={5, 555}sigmaz={1.00, 1.00}prec=100beta=0.00333sigmaMC=0.100dcross=0seed=129id=6fixed-extra-test.txt",
-"Res-fixed_Param_Nit=150deltaphi0=1.00Nz={5, 475}sigmaz={1.00, 1.00}prec=100beta=0.00400sigmaMC=0.100dcross=0seed=128id=5fixed-extra-test.txt",
-"Res-fixed_Param_Nit=101deltaphi0=1.12Nz={5, 555}sigmaz={1.00, 1.00}prec=100beta=0.00333sigmaMC=0.100dcross=0seed=129id=6quesesto.txt",
-"Res-fixed_Param_Nit=150deltaphi0=1.10Nz={5, 475}sigmaz={1.00, 1.00}prec=100beta=0.00400sigmaMC=0.100dcross=0seed=128id=5quesesto.txt"
+"datsync/uluviano/Res-fixed_Param_Nit=1000deltaphi0=1.00Nz={5, 715}sigmaz={1.00, 1.00}prec=100beta=0.00208sigmaMC=0.100dcross=0seed=2016id=8fixed_split_test_5d2019_2_temp4.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=1000deltaphi0=1.00Nz={5, 715}sigmaz={1.00, 1.00}prec=100beta=0.00227sigmaMC=0.100dcross=0seed=2016id=8fixed_split_test_5d2019_2_temp3.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=1000deltaphi0=1.00Nz={5, 715}sigmaz={1.00, 1.00}prec=100beta=0.00250sigmaMC=0.100dcross=0seed=2016id=8fixed_split_test_5d2019_2_temp2.txt",
+"datsync/uluviano/Res-fixed_Param_Nit=1000deltaphi0=1.00Nz={5, 715}sigmaz={1.00, 1.00}prec=100beta=0.00278sigmaMC=0.100dcross=0seed=2016id=8fixed_split_test_5d2019_2_temp1.txt"
 };
 
 filesChi = {
-"Res-chi_Param_Nit=101deltaphi0=0.966prec=100beta=1.00sigmaMC=0.00100dcross=0seed=135Nz=101id=fixed-extra-test.txt",
-"Res-chi_Param_Nit=150deltaphi0=0.982prec=100beta=1.00sigmaMC=0.00100dcross=0seed=133Nz=101id=fixed-extra-test.txt",
-"Res-chi_Param_Nit=101deltaphi0=1.10prec=100beta=1.00sigmaMC=0.00100dcross=0seed=135Nz=101id=quesesto.txt",
-"Res-chi_Param_Nit=150deltaphi0=1.12prec=100beta=1.00sigmaMC=0.00100dcross=0seed=133Nz=101id=quesesto.txt"
 };
 
 logdetPlotnAv[#]&/@filesLog

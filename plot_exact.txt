@@ -1,0 +1,20 @@
+
+Get["mc-boo.m"];
+
+
+exact =Join[{{1,"ext"}}, Join[ deltaFree[4] , {{2,0}}]//SortBy[#,Last]& ];
+filesLog = {
+"Res-fixed_Param_Nit=1500deltaphi0=1.10Nz={5, 475}sigmaz={1.00, 1.00}prec=100beta=0.00400sigmaMC=0.100dcross=0seed=128id=5extra_scalar-10d2019.txt",
+"Res-fixed_Param_Nit=1500deltaphi0=1.20Nz={5, 475}sigmaz={1.00, 1.00}prec=100beta=0.00400sigmaMC=0.100dcross=0seed=128id=5extra_scalar-10d2019.txt"
+};
+
+filesChi = {
+"Res-chi_Param_Nit=1500deltaphi0=1.15prec=100beta=1.00sigmaMC=0.00100dcross=0seed=133Nz=101id=extra_scalar-10d2019.txt",
+"Res-chi_Param_Nit=1500deltaphi0=1.25prec=100beta=1.00sigmaMC=0.00100dcross=0seed=133Nz=101id=extra_scalar-10d2019.txt"
+};
+
+logdetPlotnAv[#,exact]&/@filesLog
+
+chi2PlotnAv[#,exact]&/@filesChi
+
+Exit[];
