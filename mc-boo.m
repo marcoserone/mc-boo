@@ -426,6 +426,7 @@ Print[holdMyBeer];
 \[CapitalDelta]\[Phi]=holdMyBeer[[1]];
 checks=ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz];
 Print[checks[[2;;3]]];
+(*
 holdMyBeer=metroReturnAvgChi2[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],nz,1,\[CapitalDelta]L[[1;;it]],seed+2it,initialOps,runid,sigmaz,sigmaChi[[it-initialOps+1]],0,opsToVary[[it-initialOps+1]]][[1]];
 Print[holdMyBeer];
 \[CapitalDelta]L[[1;;it,1]]=holdMyBeer[[2;;-1]];
@@ -433,6 +434,7 @@ Print[holdMyBeer];
 checks=ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz];
 Print[checks[[2;;3]]];
 
+*)
 nzeros=checks[[3]];
 $MinPrecision=3;
 DumpSave["hold_my_beer_it"<>ToString[it]<>ToString[nits[[it-initialOps+1]]]<>"Nz="<>ToString[nzLogDet[[it-initialOps+1]]]<>"sigmaz="<>ToString[N[sigmazLogDet[[it-initialOps+1]],3]]<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"nz="<>ToString[nz]<>".txt", holdMyBeer];
@@ -872,7 +874,7 @@ Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
 \[CapitalDelta]L=deltaFree[maxops] ,sigmazLogdet=Table[{sigmaz,sigmaz},{opa,minops,maxops}],
 opsToVary=Table[Range[1,opa],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
 sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
-\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
+\[Beta]list=Table[1/((nmin/4)(2+temps/2)(i/4)),{i,minops,maxops}]
 },
 \[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
 \[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (succOffset);
@@ -887,7 +889,7 @@ Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
 \[CapitalDelta]L=deltaFree[maxops] ,sigmazLogdet=Table[{sigmaz,sigmaz},{opa,minops,maxops}],
 opsToVary=Table[Drop[Range[0,opa],{3}],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
 sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
-\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
+\[Beta]list=Table[1/((nmin/4)(2+temps/2)(i/4)),{i,minops,maxops}]
 },
 \[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
 \[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (succOffset);
@@ -906,7 +908,7 @@ Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
 (*now we have to drop the 4th element in order to leave the stress-energy tensor fixed*)
 opsToVary=Table[Drop[Range[0,opa],{4}],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
 sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
-\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
+\[Beta]list=Table[1/((nmin/4)(2+temps/2)(i/4)),{i,minops,maxops}]
 },
 \[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
 \[CapitalDelta]L[[minops+1;;maxops-1,1]]=\[CapitalDelta]L[[minops+1;;maxops-1,1]] (succOffset);
@@ -924,7 +926,7 @@ Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
 \[CapitalDelta]L=deltaFree[maxops-1] ,sigmazLogdet=Table[{sigmaz,sigmaz},{opa,minops,maxops}],
 opsToVary=Table[Range[1,opa],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
 sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
-\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
+\[Beta]list=Table[1/((nmin/4)(2+temps/2)(i/4)),{i,minops,maxops}]
 },
 \[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
 \[CapitalDelta]L[[minops+1;;maxops-1,1]]=\[CapitalDelta]L[[minops+1;;maxops-1,1]] (succOffset);
