@@ -53,10 +53,15 @@ pp=Join[qq0,id];
 Return[Log[Det[pp]^2]]];
 
 (*assorted functions*)
+
+(*Free spectrum*)
 deltaFree[n_]:={2#,2#-2}&/@Range[1,n,1];
+(*Free OPEs*)
 opeFreeRen[n_]:=(renomFactor[2#])^(-1) 2((2#-2)!)^2/(2(2#-2))!&/@Range[1,n,1];
+(*Minors*)
 selectiveMinors[mat_,elems_]:=
 Det[mat[[elems]]];
+(*Takes dimensions and appends spin*)
 spinAppender[\[CapitalDelta]_]:=Transpose[{\[CapitalDelta],Range[0,2Length[\[CapitalDelta]] -2,2]}];
 
 (*MC routine*)
@@ -570,7 +575,7 @@ sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
 },
 \[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
 \[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (succOffset);
-\[CapitalDelta]L[[fixedCurrent,1]]=2fixedCurrent-2;
+\[CapitalDelta]L[[fixedCurrent-1,1]]=2fixedCurrent-2;
 nits[[1]] = firstNit;
 mcIteratorSplitThing[it,deltaext,deltaextMaxTravel,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross]
 ]
