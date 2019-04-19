@@ -286,7 +286,9 @@ holdMyBeer=Mean[data[[-100;;-1,2]]];
 \[CapitalDelta]L[[All,1]]=holdMyBeer[[2;;-1]];
 \[CapitalDelta]\[Phi]=holdMyBeer[[1]];
 Print[{\[CapitalDelta]\[Phi],\[CapitalDelta]L}];
+(*
 ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L,100,3,150,1/10]
+*)
 ];
 
 logdetPlotnAv[filename_,exact_]:=Block[{data,numDims,holdMyBeer,\[CapitalDelta]\[Phi],\[CapitalDelta]L},
@@ -300,7 +302,9 @@ holdMyBeer=Mean[data[[-100;;-1,2]]];
 \[CapitalDelta]L[[All,1]]=holdMyBeer[[2;;-1]];
 \[CapitalDelta]\[Phi]=holdMyBeer[[1]];
 Print[{\[CapitalDelta]\[Phi],\[CapitalDelta]L}];
+(*
 ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L,100,3,150,1/10]
+*)
 ];
 
 chi2PlotnAv[filename_]:=Block[{data,exact,numDims},
@@ -494,6 +498,45 @@ Export["landscape-nosmear-1000-zooom.csv",Flatten[aaa10,1]]
 
 ListPlot3D[Flatten[aaa10,1]] 
 *)
+
+genLog[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,dcross_,elems_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
+    \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,gradientLog,func0}, 
+    (*precision*)
+SetOptions[{RandomReal,RandomVariate,NSolve},WorkingPrecision->prec];
+$MaxPrecision=prec;
+$MinPrecision=prec;
+
+    SeedRandom[seed];
+  zsample = Sample[Nz,sigmaz,seed]; 
+  Print[Dimensions[zsample]];
+Idsample = qQId[\[CapitalDelta]\[Phi], zsample];
+Print[Dimensions[Idsample]];
+    \[CapitalDelta]L = \[CapitalDelta]LOriginal;
+  \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
+  
+
+    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+    Print[Dimensions[QQ0]];
+  
+   PP= Join[QQ0,{Idsample}]; 
+          Actionnew = Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total; 
+         
+QQsave=QQ0;
+(*Brot noch schmieren? *)
+If[dcross!=0,
+smearedaction=Reap[Table[
+           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
+          Sow[ Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total ];
+           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]-dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
+          Sow[ Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total ];
+          QQ0=QQsave,
+          {dimToVary,1,Length[\[CapitalDelta]L]}]];
+
+ Actionnew =Actionnew +Total[smearedaction[[2]]//Flatten] ;
+ ];
+ Return[Actionnew];
+];
 
 fixedExternalWrapperSplit[it_,prec_,nzCheck_,seed_,minops_,maxops_,nmin_,firstNit_,succNits_,firstOffset_,succOffset_,sigmaChi_,sigmaz_,temps_,idTag_,sigmazCheck_,sigmaMC_,maxReps_,dcross_]:=Block[
 {
