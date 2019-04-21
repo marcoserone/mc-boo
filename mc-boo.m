@@ -89,6 +89,24 @@ Print[Dimensions[Idsample]];
 
     QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
     Print[Dimensions[QQ0]];
+
+(*Initial action Calc*)
+          PP= Join[QQ0,{Idsample}]; 
+          Action = Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total; 
+         
+QQsave=QQ0;
+(*Brot noch schmieren? *)
+If[dcross!=0,
+smearedaction=Reap[Table[
+           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
+          Sow[ Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total ];
+           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]-dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
+          Sow[ Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total ];
+          QQ0=QQsave,
+          {dimToVary,1,lmax}]];
+
+ Action =Action +Total[smearedaction[[2]]//Flatten] 
+ ];
      
     (*Monte Carlo Iteration*)
 TotD =   Reap[ Do[
