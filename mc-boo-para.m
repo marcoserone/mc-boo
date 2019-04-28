@@ -92,7 +92,7 @@ Print[Dimensions[Idsample]];
 
 (*Initial action Calc*)
           PP= Join[QQ0,{Idsample}]; 
-          Action = Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total; 
+          Action = Log[(ParallelMap[selectiveMinors[PP//Transpose,#]&,elems])^2]//Total; 
          
 QQsave=QQ0;
 (*Brot noch schmieren? *)
@@ -132,14 +132,14 @@ If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2
          (*Vary exchanged*)
           \[CapitalDelta]L[[dimToVary,1]] = \[CapitalDelta]L[[dimToVary,1]]+ RandomVariate[NormalDistribution[0,sigmaMC]];
           If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2];
-          QQ0[[dimToVary]] = qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],zsample];
+          QQ0[[dimToVary]] = ParallelMap[qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],#]&,zsample];
           ];
 (*Reevaluate coefficients*)
            
           
     (*Coefficients for LES and action thence*)
           PP= Join[QQ0,{Idsample}]; 
-          Actionnew = Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total; 
+          Actionnew = Log[(ParallelMap[selectiveMinors[PP//Transpose,#]&,elems])^2]//Total; 
          
 QQsave=QQ0;
 (*Brot noch schmieren? *)
