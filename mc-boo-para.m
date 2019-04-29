@@ -121,18 +121,22 @@ If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2
         dimToVary=opsToVary[[-1]],  
         dimToVary = opsToVary[[RandomInteger[{1,Length[opsToVary]}]]]];
        (*Shift one dimension by a random amount*)    
+     If[dimToVary==0,
+         (*Vary external*)
+         \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]+ RandomVariate[NormalDistribution[0,sigmaMC/2]];
+	 If[Abs[\[CapitalDelta]\[Phi]- \[CapitalDelta]\[Phi]0] > deltaExtMax, \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]old;];,
+         (*Vary exchanged*)
+          \[CapitalDelta]L[[dimToVary,1]] = \[CapitalDelta]L[[dimToVary,1]]+ RandomVariate[NormalDistribution[0,sigmaMC]];
+          If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2];
+          ];
        
        (*START PARALLEL*)
           Actionnew = (ParallelTable[
      If[dimToVary==0,
          (*Vary external*)
-         \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]+ RandomVariate[NormalDistribution[0,sigmaMC/2]];
-	 If[Abs[\[CapitalDelta]\[Phi]- \[CapitalDelta]\[Phi]0] > deltaExtMax, \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]old;];
          Idsample[[idProc]]  = qQId[\[CapitalDelta]\[Phi], zsample[[idProc]]];    
          QQ0[[;;,idProc,;;]]  = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample[[idProc]]];,
          (*Vary exchanged*)
-          \[CapitalDelta]L[[dimToVary,1]] = \[CapitalDelta]L[[dimToVary,1]]+ RandomVariate[NormalDistribution[0,sigmaMC]];
-          If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2];
           QQ0[[dimToVary,idProc,;;]] = qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],zsample[[idProc]]];
           ];
           PP[[;;,idProc,;;]]= Join[QQ0[[;;,idProc,;;]] ,{Idsample[[idProc]]}]; 
