@@ -70,29 +70,27 @@ spinAppender[\[CapitalDelta]_]:=Transpose[{\[CapitalDelta],Range[0,2Length[\[Cap
 lmax_order of the highest operator to vary (redundant at this stage), idTag_string for identifying runs, initialOps_ This tells the routine whether to vary all operators from the begining or just let the newly added one vary on its own for a certain number of steps,
 opsToVary_array with the *)
 
-MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]0_,deltaExtMax_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_,opsToVary_,sigmaz_,Nz_,elems_]:=
-Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
-    zsample, Idsample, PP0, PP1, lr, nr, Errvect, nAccept=0,nReject=0,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L,dw,smearedaction,\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]\[Phi]old,nops=Length[\[CapitalDelta]LOriginal], \[CapitalDelta]Lmin, actMin,\[CapitalDelta]\[Phi]min}, 
+MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]0_,deltaExtMax_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_,opsToVary_,sigmaz_,Nz_,elems_,Nprocs_]:=
+Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0=ConstantArray[0,{Length[\[CapitalDelta]LOriginal],Nprocs,Nz}], QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
+    zsample, Idsample, PP0, PP1, lr, nr, Errvect, nAccept=0,nReject=0,Ident,OPEcoeff,ActionTot,  TotD ,DDldataold,QQold,\[CapitalDelta]LOld,dimToVary,PP=ConstantArray[0,{Length[\[CapitalDelta]LOriginal]+1,Nprocs,Nz}],QQsave,\[CapitalDelta]L,dw,smearedaction,\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]\[Phi]old,nops=Length[\[CapitalDelta]LOriginal], \[CapitalDelta]Lmin, actMin,\[CapitalDelta]\[Phi]min}, 
     (*precision*)
 SetOptions[{RandomReal,RandomVariate},WorkingPrecision->prec];
 $MaxPrecision=prec;
 $MinPrecision=prec;
 
     SeedRandom[seed];
-  zsample = Join[Sample[Nz[[1]],sigmaz[[1]],seed],Sample[Nz[[2]],sigmaz[[2]],seed+1]]; 
+  zsample = Table[Sample[Nz,sigmaz,seed+i],{i,1,Nprocs}]; 
   Print[Dimensions[zsample]];
 Idsample = qQId[\[CapitalDelta]\[Phi], zsample];
 Print[Dimensions[Idsample]];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
-
-    QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];
+Action = (ParallelTable[
+    QQ0[[;;,idProc,;;]] = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample[[idProc]]];
     Print[Dimensions[QQ0]];
-
-(*Initial action Calc*)
-          PP= Join[QQ0,{Idsample}]; 
-          Action = Log[(ParallelMap[selectiveMinors[PP//Transpose,#]&,elems])^2]//Total; 
+          PP[[;;,idProc,;;]]= Join[QQ0[[;;,idProc,;;]] ,{Idsample[[idProc]]}]; 
+          Log[(selectiveMinors[PP[[;;,idProc,;;]]//Transpose,#]&/@elems)^2]//Total,{idProc,1,Nprocs}] //Total)/(Nprocs*Nz);
          
 QQsave=QQ0;
 (*Brot noch schmieren? *)
@@ -109,7 +107,7 @@ smearedaction=Reap[Table[
  ];
 	  actMin = Action;
      
-    (*Monte Carlo Iteration*)
+    (*Monte Carlo Iteration *)
 TotD =   Reap[ Do[
 $MinPrecision=prec;
 (*Save previous values*)
@@ -122,38 +120,28 @@ If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2
         If[it<Ndit/10&& nops!=initialOps, 
         dimToVary=opsToVary[[-1]],  
         dimToVary = opsToVary[[RandomInteger[{1,Length[opsToVary]}]]]];
-       (*Shift one dimension by a random amount*)       
-         If[dimToVary==0,
+       (*Shift one dimension by a random amount*)    
+       
+       (*START PARALLEL*)
+          Actionnew = (ParallelTable[
+     If[dimToVary==0,
          (*Vary external*)
          \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]+ RandomVariate[NormalDistribution[0,sigmaMC/2]];
 	 If[Abs[\[CapitalDelta]\[Phi]- \[CapitalDelta]\[Phi]0] > deltaExtMax, \[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]old;];
-         Idsample = qQId[\[CapitalDelta]\[Phi], zsample];    
-         QQ0 = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample];,
+         Idsample[[idProc]]  = qQId[\[CapitalDelta]\[Phi], zsample[[idProc]]];    
+         QQ0[[;;,idProc,;;]]  = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample[[idProc]]];,
          (*Vary exchanged*)
           \[CapitalDelta]L[[dimToVary,1]] = \[CapitalDelta]L[[dimToVary,1]]+ RandomVariate[NormalDistribution[0,sigmaMC]];
           If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2];
-          QQ0[[dimToVary]] = ParallelMap[qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],#]&,zsample];
+          QQ0[[dimToVary,idProc,;;]] = qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],zsample[[idProc]]];
           ];
+          PP[[;;,idProc,;;]]= Join[QQ0[[;;,idProc,;;]] ,{Idsample[[idProc]]}]; 
+          Log[(selectiveMinors[PP[[;;,idProc,;;]]//Transpose,#]&/@elems)^2]//Total,{idProc,1,Nprocs}] //Total)/(Nprocs*Nz);   
+     (*End PARALLEL*)
 (*Reevaluate coefficients*)
            
           
-    (*Coefficients for LES and action thence*)
-          PP= Join[QQ0,{Idsample}]; 
-          Actionnew = Log[(ParallelMap[selectiveMinors[PP//Transpose,#]&,elems])^2]//Total; 
-         
-QQsave=QQ0;
-(*Brot noch schmieren? *)
-If[dcross!=0,
-smearedaction=Reap[Table[
-           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
-          Sow[ Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total ];
-           QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]-dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
-          Sow[ Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total ];
-          QQ0=QQsave,
-          {dimToVary,1,lmax}]];
-
- Actionnew =Actionnew +Total[smearedaction[[2]]//Flatten] 
- ];
+ 
          
           metcheck = Exp[(-betad)*(Actionnew - Action)];
           rr = RandomReal[{0, 1}];
@@ -173,7 +161,7 @@ $MinPrecision=10;
      {it, 1, Ndit}];
    dw=Join[{\[CapitalDelta]\[Phi]min},\[CapitalDelta]Lmin[[All,1]]];
           Sow[ {Ndit+1, dw, N[actMin,10]}]
-     ]; 
+     ];
      Print[{nAccept,nReject}];
 $MinPrecision=3;
       Export["Res-fixed_Param_Nit="<>ToString[Ndit]<>"deltaphi0="<>ToString[N[\[CapitalDelta]\[Phi]0,3]]<>"Nz="<>ToString[Nz]<>"sigmaz="<>ToString[N[sigmaz,3]]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[betad,3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[dcross,3]]<>"seed="<>ToString[seed]<>"id="<>idTag<>".txt", TotD[[2]]];]
