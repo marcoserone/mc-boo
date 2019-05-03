@@ -1,0 +1,16 @@
+Get["mc-boo-para.m"];
+
+it=4;prec=100;nzCheck=100;seed=123;minops=4;maxops=5;
+(*minors per processor*)
+nmin=20;
+nProcs=2;
+(*Run parameters*)
+firstNit=10;succNits=5;firstOffset=15/10;succOffset=11/10;sigmaChi=1/100;sigmaz=1;idTag="sumtests";sigmazCheck=1;sigmaMC=1/10;maxReps=0;dcross=0;
+
+elems=Table[Table[Range[1+(opa+1)j-(opa+1),(opa+1)j],{j,1,nmin}],{opa,minops,maxops}];
+Nz=Table[nmin(opa+1),{opa,minops,maxops}];
+ΔL=deltaFree[maxops];sigmazLogdet=Table[sigmaz,{opa,minops,maxops}];opsToVary=Table[Range[1,opa],{opa,minops,maxops}];nits=ConstantArray[succNits,maxops-minops+1];sigmaChiList=Table[sigmaChi,{i,minops,maxops}];βlist=Table[5/2,{i,minops,maxops}];
+ΔL[[1;;minops,1]]=ΔL[[1;;minops,1]] (firstOffset);
+ΔL[[minops+1;;maxops,1]]=ΔL[[minops+1;;maxops,1]] (succOffset);
+nits[[1]]=firstNit;
+mcIteratorSplitThing[it,1,0,minops,maxops,ΔL,βlist,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross,nProcs]
