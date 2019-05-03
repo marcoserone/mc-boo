@@ -293,7 +293,7 @@ Return[{data[[-1,2]],data[[-1,3]]}];
 
 
 (*Plotters*)
-logdetPlotnAv[filename_]:=Block[{data,exact,numDims,holdMyBeer,\[CapitalDelta]\[Phi],\[CapitalDelta]L},
+logdetPlotnAv[filename_]:=Block[{data,exact,numDims,dimHolder,\[CapitalDelta]\[Phi],\[CapitalDelta]L},
 data= Get[filename];
 numDims=Length[data[[1,2]]];
 exact=Join[{1},deltaFree[numDims-1][[;;,1]]];
@@ -301,25 +301,27 @@ exact=Join[{1},deltaFree[numDims-1][[;;,1]]];
 Export[filename<>"nat-plot"<>".pdf",ListPlot[Table[data[[All,2]][[All,i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->Join[{"ext"},deltaFree[numDims-1][[;;,2]]],PlotLabel->"Full Plot"]];
 Export[filename<>"rel-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->Join[{"ext"},deltaFree[numDims-1][[;;,2]]],PlotLabel->"Relative Error"]];
 Export[filename<>"zoomed-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i]])/exact[[i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{-1/10,1/10},PlotLegends->Join[{"ext"},deltaFree[numDims-1][[;;,2]]],PlotLabel->"Relative Error (zoom)"]];
-holdMyBeer=Mean[data[[-100;;-1,2]]];
-\[CapitalDelta]L[[All,1]]=holdMyBeer[[2;;-1]];
-\[CapitalDelta]\[Phi]=holdMyBeer[[1]];
+Export[filename<>"action_plot"<>".pdf",ListPlot[data[[All,3]],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->All,PlotLabel->"Action Evolution"]];
+dimHolder=Mean[data[[-100;;-1,2]]];
+\[CapitalDelta]L[[All,1]]=dimHolder[[2;;-1]];
+\[CapitalDelta]\[Phi]=dimHolder[[1]];
 Print[{\[CapitalDelta]\[Phi],\[CapitalDelta]L}];
 (*
 ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L,100,3,150,1/10]
 *)
 ];
 
-logdetPlotnAv[filename_,exact_]:=Block[{data,numDims,holdMyBeer,\[CapitalDelta]\[Phi],\[CapitalDelta]L},
+logdetPlotnAv[filename_,exact_]:=Block[{data,numDims,dimHolder,\[CapitalDelta]\[Phi],\[CapitalDelta]L},
 data= Get[filename];
 numDims=Length[data[[1,2]]];
 \[CapitalDelta]L=deltaFree[numDims-1];
 Export[filename<>"nat-plot"<>".pdf",ListPlot[Table[data[[All,2]][[All,i]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->exact[[;;,2]],PlotLabel->"Full Plot"]];
 Export[filename<>"rel-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i,1]])/exact[[i,1]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotLegends->exact[[;;,2]],PlotLabel->"Relative Error"]];
 Export[filename<>"zoomed-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-exact[[i,1]])/exact[[i,1]],{i,1,numDims}],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->{-1/10,1/10},PlotLegends->exact[[;;,2]],PlotLabel->"Relative Error (zoom)"]];
-holdMyBeer=Mean[data[[-100;;-1,2]]];
-\[CapitalDelta]L[[All,1]]=holdMyBeer[[2;;-1]];
-\[CapitalDelta]\[Phi]=holdMyBeer[[1]];
+Export[filename<>"action_plot"<>".pdf",ListPlot[data[[All,3]],Joined->True,GridLines->Automatic,PlotStyle->Thin,PlotRange->All,PlotLabel->"Action Evolution"]];
+dimHolder=Mean[data[[-100;;-1,2]]];
+\[CapitalDelta]L[[All,1]]=dimHolder[[2;;-1]];
+\[CapitalDelta]\[Phi]=dimHolder[[1]];
 Print[{\[CapitalDelta]\[Phi],\[CapitalDelta]L}];
 (*
 ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L,100,3,150,1/10]
@@ -384,22 +386,22 @@ Return[{results,Count[finalcheck,True]/Nz, nzeros}];
 
 
 mcIteratorFullThing[\[CapitalDelta]\[Phi]0_,deltaExtMax_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,sigmaChi_,opsToVary_,sigmazLogDet_,nzLogDet_,elems_,dcross_]:=
-Block[{\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps,holdMyBeer},
+Block[{\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps,dimHolder},
 it=initialOps;
 
 SetOptions[RandomReal,WorkingPrecision->100];
 results=Reap[
 While[it<=finalOps,
-holdMyBeer=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]],dcross]][[1]];
-Print[holdMyBeer];
-\[CapitalDelta]L[[1;;it,1]]=holdMyBeer[[2;;-1]];
-\[CapitalDelta]\[Phi]=holdMyBeer[[1]];
+dimHolder=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]],dcross]][[1]];
+Print[dimHolder];
+\[CapitalDelta]L[[1;;it,1]]=dimHolder[[2;;-1]];
+\[CapitalDelta]\[Phi]=dimHolder[[1]];
 checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]];
 Print[checks[[2;;3]]];
-holdMyBeer=Sow[metroReturnAvgChi2[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],nz,1,\[CapitalDelta]L[[1;;it]],seed+2it,initialOps,runid,sigmaz,sigmaChi[[it-initialOps+1]],0,opsToVary[[it-initialOps+1]]]][[1]];
-Print[holdMyBeer];
-\[CapitalDelta]L[[1;;it,1]]=holdMyBeer[[2;;-1]];
-\[CapitalDelta]\[Phi]=holdMyBeer[[1]];
+dimHolder=Sow[metroReturnAvgChi2[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],nz,1,\[CapitalDelta]L[[1;;it]],seed+2it,initialOps,runid,sigmaz,sigmaChi[[it-initialOps+1]],0,opsToVary[[it-initialOps+1]]]][[1]];
+Print[dimHolder];
+\[CapitalDelta]L[[1;;it,1]]=dimHolder[[2;;-1]];
+\[CapitalDelta]\[Phi]=dimHolder[[1]];
 checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]];
 Print[checks[[2;;3]]];
 
@@ -414,33 +416,33 @@ Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOp
 
 (*SplitThing*)
 mcIteratorSplitThing[it_,\[CapitalDelta]\[Phi]0_,deltaExtMax_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,sigmaChi_,opsToVary_,sigmazLogDet_,nzLogDet_,elems_,dcross_]:=
-Block[{\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,seed=seedO,nzeros=finalOps,holdMyBeer},
+Block[{\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,seed=seedO,nzeros=finalOps,dimHolder},
 
 SetOptions[RandomReal,WorkingPrecision->100];
 If[it!=initialOps, 
 $MinPrecision=3;
-Get["hold_my_beer_it"<>ToString[it-1]<>ToString[nits[[it-initialOps]]]<>"Nz="<>ToString[nzLogDet[[it-initialOps]]]<>"sigmaz="<>ToString[N[sigmazLogDet[[it-initialOps]],3]]<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"nz="<>ToString[nz]<>".txt"];
-\[CapitalDelta]L[[1;;it-1,1]]=holdMyBeer[[2;;-1]];
-\[CapitalDelta]\[Phi]=holdMyBeer[[1]];
+Get["dimHolder_it"<>ToString[it-1]<>ToString[nits[[it-initialOps]]]<>"Nz="<>ToString[nzLogDet[[it-initialOps]]]<>"sigmaz="<>ToString[N[sigmazLogDet[[it-initialOps]],3]]<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"nz="<>ToString[nz]<>".txt"];
+\[CapitalDelta]L[[1;;it-1,1]]=dimHolder[[2;;-1]];
+\[CapitalDelta]\[Phi]=dimHolder[[1]];
 ];
 
-holdMyBeer=metroReturnAvg[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]],dcross][[1]];
-Print[holdMyBeer];
-\[CapitalDelta]L[[1;;it,1]]=holdMyBeer[[2;;-1]];
-\[CapitalDelta]\[Phi]=holdMyBeer[[1]];
+dimHolder=metroReturnAvg[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]],dcross][[1]];
+Print[dimHolder];
+\[CapitalDelta]L[[1;;it,1]]=dimHolder[[2;;-1]];
+\[CapitalDelta]\[Phi]=dimHolder[[1]];
 checks=ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz];
 Print[checks[[2;;3]]];
 (*zerotemprun*)
-holdMyBeer=metroReturnAvg[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],Infinity,\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC/10,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]],dcross][[1]];
-Print[holdMyBeer];
-\[CapitalDelta]L[[1;;it,1]]=holdMyBeer[[2;;-1]];
-\[CapitalDelta]\[Phi]=holdMyBeer[[1]];
+dimHolder=metroReturnAvg[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],Infinity,\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC/10,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]],dcross][[1]];
+Print[dimHolder];
+\[CapitalDelta]L[[1;;it,1]]=dimHolder[[2;;-1]];
+\[CapitalDelta]\[Phi]=dimHolder[[1]];
 checks=ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz];
 Print[checks[[2;;3]]];
 
 nzeros=checks[[3]];
 $MinPrecision=3;
-DumpSave["hold_my_beer_it"<>ToString[it]<>ToString[nits[[it-initialOps+1]]]<>"Nz="<>ToString[nzLogDet[[it-initialOps+1]]]<>"sigmaz="<>ToString[N[sigmazLogDet[[it-initialOps+1]],3]]<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"nz="<>ToString[nz]<>".txt", holdMyBeer];
+DumpSave["dimHolder_it"<>ToString[it]<>ToString[nits[[it-initialOps+1]]]<>"Nz="<>ToString[nzLogDet[[it-initialOps+1]]]<>"sigmaz="<>ToString[N[sigmazLogDet[[it-initialOps+1]],3]]<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"nz="<>ToString[nz]<>".txt", dimHolder];
 ]
 
 

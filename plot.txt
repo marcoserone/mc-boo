@@ -1,12 +1,9 @@
 
-Get["mc-boo.m"];
+Get["mc-boo-para.m"];
 
 
 filesLog = {
-"datsync/uluviano/Res-fixed_Param_Nit=1000deltaphi0=1.00Nz={5, 715}sigmaz={1.00, 1.00}prec=100beta=0.00208sigmaMC=0.100dcross=0seed=2016id=8fixed_split_test_5d2019_2_temp4.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=1000deltaphi0=1.00Nz={5, 715}sigmaz={1.00, 1.00}prec=100beta=0.00227sigmaMC=0.100dcross=0seed=2016id=8fixed_split_test_5d2019_2_temp3.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=1000deltaphi0=1.00Nz={5, 715}sigmaz={1.00, 1.00}prec=100beta=0.00250sigmaMC=0.100dcross=0seed=2016id=8fixed_split_test_5d2019_2_temp2.txt",
-"datsync/uluviano/Res-fixed_Param_Nit=1000deltaphi0=1.00Nz={5, 715}sigmaz={1.00, 1.00}prec=100beta=0.00278sigmaMC=0.100dcross=0seed=2016id=8fixed_split_test_5d2019_2_temp1.txt"
+"datsync/uluviano/Res-fixed_Param_Nit=1000deltaphi0=1.00Nz={5, 715}sigmaz={1.00, 1.00}prec=100beta=0.00208sigmaMC=0.100dcross=0seed=2016id=8fixed_split_test_5d2019_2_temp4.txt"
 };
 
 filesChi = {
@@ -16,3 +13,4 @@ logdetPlotnAv[#]&/@filesLog
 
 chi2PlotnAv[#]&/@filesChi
 
+Exit[];
