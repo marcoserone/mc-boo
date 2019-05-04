@@ -385,40 +385,18 @@ Return[{results,Count[finalcheck,True]/Nz, nzeros}];
 
 
 
-mcIteratorFullThing[\[CapitalDelta]\[Phi]0_,deltaExtMax_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,sigmaChi_,opsToVary_,sigmazLogDet_,nzLogDet_,elems_,dcross_]:=
-Block[{\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps,dimHolder},
-it=initialOps;
 
-SetOptions[RandomReal,WorkingPrecision->100];
-results=Reap[
-While[it<=finalOps,
-dimHolder=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]],dcross]][[1]];
-Print[dimHolder];
-\[CapitalDelta]L[[1;;it,1]]=dimHolder[[2;;-1]];
-\[CapitalDelta]\[Phi]=dimHolder[[1]];
-checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]];
-Print[checks[[2;;3]]];
-dimHolder=Sow[metroReturnAvgChi2[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],nz,1,\[CapitalDelta]L[[1;;it]],seed+2it,initialOps,runid,sigmaz,sigmaChi[[it-initialOps+1]],0,opsToVary[[it-initialOps+1]]]][[1]];
-Print[dimHolder];
-\[CapitalDelta]L[[1;;it,1]]=dimHolder[[2;;-1]];
-\[CapitalDelta]\[Phi]=dimHolder[[1]];
-checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]];
-Print[checks[[2;;3]]];
-
-If[(checks[[2]]==1) &&(checks[[3]]<=nzeros+1) ,
-nzeros=checks[[3]];it=it+1;repCount=0,
-If[repCount<maxReps,\[CapitalDelta]L[[1;;it,1]]=\[CapitalDelta]L[[1;;it,1]](1+Table[RandomReal[{-1/100,1/100}],{i,1,it}]);
-Print["Rejected"];seed=seed+finalOps;repCount=repCount+1,Print["Andato_a"];Break[]]];
-];
-];
-Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
-]
 
 (*SplitThing*)
+(*This routine does the job of adding an extra operator step by step.
+	The arguments that are passed to it have to be those of the whole set of tests, and the variable it_ indicates which is the particular step that will be executed.
+	it_ should take the values initialOps, ..., finalOps and they should be run in order, since the routine calls a dumpsave file with the results of the previous one.
+	*)
 mcIteratorSplitThing[it_,\[CapitalDelta]\[Phi]0_,deltaExtMax_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,sigmaChi_,opsToVary_,sigmazLogDet_,nzLogDet_,elems_,dcross_,nProcs_]:=
 Block[{\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,seed=seedO,nzeros=finalOps,dimHolder},
 
 SetOptions[RandomReal,WorkingPrecision->100];
+(*Call back dumpsave with results of previous run unless it is the first one*)
 If[it!=initialOps, 
 $MinPrecision=3;
 Get["dimHolder_it"<>ToString[it-1]<>ToString[nits[[it-initialOps]]]<>"Nz="<>ToString[nzLogDet[[it-initialOps]]]<>"sigmaz="<>ToString[N[sigmazLogDet[[it-initialOps]],3]]<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"nz="<>ToString[nz]<>".txt"];
@@ -432,7 +410,7 @@ Print[dimHolder];
 \[CapitalDelta]\[Phi]=dimHolder[[1]];
 checks=ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz];
 Print[checks[[2;;3]]];
-(*zerotemprun*)
+(*Do a zero temperature run with a smaller step to refine previous results*)
 dimHolder=metroReturnAvg[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],Infinity,\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC/10,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]],dcross,nProcs][[1]];
 Print[dimHolder];
 \[CapitalDelta]L[[1;;it,1]]=dimHolder[[2;;-1]];
@@ -449,64 +427,9 @@ DumpSave["dimHolder_it"<>ToString[it]<>ToString[nits[[it-initialOps+1]]]<>"Nz="<
 
 
 
-(*Temps suggested value 3,4*)
-fitExternalWrapper[prec_,nzCheck_,seed_,minops_,maxops_,nmin_,firstNit_,succNits_,firstOffset_,succOffset_,sigmaChi_,sigmaz_,temps_,deltaext_,deltaextMaxTravel_,idTag_,sigmazCheck_,sigmaMC_,maxReps_,dcross_]:=Block[
-{
-elems=Table[Table[Range[1+(opa+1)j-(opa+1),(opa+1)j],{j,1,nmin}],{opa,minops,maxops}],
-Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
-\[CapitalDelta]L=deltaFree[maxops] ,sigmazLogdet=Table[{sigmaz,sigmaz},{opa,minops,maxops}],
-opsToVary=Table[Drop[Range[0,opa],{3}],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
-sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
-\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
-},
-\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
-\[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (succOffset);
-\[CapitalDelta]L[[2,1]]=4;
-nits[[1]] = firstNit;
-mcIteratorFullThing[deltaext,deltaextMaxTravel,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross]
-]
+(* Landscape Exploring routine *)
+
 (*
-fitExternalWrapper[100,101,123,4,5,5,200,101,3/2,11/10,10^(-3),1,3,11/10,1/5,"bblb",1/10,1/10,0,0]
-*)
-
-
-(* Fullthing Tester - External fixed*)
-(*Temps suggested value 3,4*)
-fixedExternalWrapper[prec_,nzCheck_,seed_,minops_,maxops_,nmin_,firstNit_,succNits_,firstOffset_,succOffset_,sigmaChi_,sigmaz_,temps_,idTag_,sigmazCheck_,sigmaMC_,maxReps_,dcross_]:=Block[
-{
-elems=Table[Table[Range[1+(opa+1)j-(opa+1),(opa+1)j],{j,1,nmin}],{opa,minops,maxops}],
-Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
-\[CapitalDelta]L=deltaFree[maxops] ,sigmazLogdet=Table[{sigmaz,sigmaz},{opa,minops,maxops}],
-opsToVary=Table[Range[1,opa],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
-sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
-\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
-},
-\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
-\[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (succOffset);
-nits[[1]] = firstNit;
-mcIteratorFullThing[1,0,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross]
-]
-(*
-fixedExternalWrapper[100,101,123,4,5,5,200,101,3/2,11/10,10^(-3),1,1,"bblb",1/10,1/10,0,0]
-*)
-
-
-
-(* multipoint tester
-
-ops=4;
-a=
-ParallelTable[
-nz=20;
-\[CapitalDelta]L=deltaFree[ops];
-\[CapitalDelta]L[[1;;ops,1]]=\[CapitalDelta]L[[1;;ops,1]] (1+ 2/10);
-elemss=Table[Range[1+5j-5,5j],{j,1,nz/5}];
-MetroGoFixedSelectiveDir[1,\[CapitalDelta]L,2000,100,1/(2(2+t)),61+2t,1/10,0,4,"print-test-800-5-t="<>ToString[{t}],4,{1,2,3,4},{1/5,1/5},{nz-10,10},elemss]//Timing ,{t,1,6}];
-Print[a];
-*)
-
-(* Landscape fun
-
 \[CapitalDelta]L=deltaFree[4];
 aaa10=ParallelTable[\[CapitalDelta]L[[1,1]]=y/10000;{x/10000,y/10000,Total@Table[genLog[x/10000,\[CapitalDelta]L,100,5i,5,1/5,0], {i, 1, 200}]},{x,9900,10100},{y,19000,21000}];
 
@@ -519,6 +442,7 @@ Export["landscape-nosmear-1000-zooom.csv",Flatten[aaa10,1]]
 ListPlot3D[Flatten[aaa10,1]] 
 *)
 
+(*Action generator*)
 genLog[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_,dcross_,elems_]:=Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
     \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,gradientLog,func0}, 
@@ -557,6 +481,10 @@ smearedaction=Reap[Table[
  ];
  Return[Actionnew];
 ];
+
+
+
+(*Wrappers for particular cases. Deprecated as of 4/5/2019*)
 
 fixedExternalWrapperSplit[it_,prec_,nzCheck_,seed_,minops_,maxops_,nmin_,firstNit_,succNits_,firstOffset_,succOffset_,sigmaChi_,sigmaz_,temps_,idTag_,sigmazCheck_,sigmaMC_,maxReps_,dcross_]:=Block[
 {
@@ -642,3 +570,71 @@ sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
 nits[[1]] = firstNit;
 mcIteratorSplitThing[it,deltaext,deltaextMaxTravel,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross]
 ]
+(*Temps suggested value 3,4*)
+fitExternalWrapper[prec_,nzCheck_,seed_,minops_,maxops_,nmin_,firstNit_,succNits_,firstOffset_,succOffset_,sigmaChi_,sigmaz_,temps_,deltaext_,deltaextMaxTravel_,idTag_,sigmazCheck_,sigmaMC_,maxReps_,dcross_]:=Block[
+{
+elems=Table[Table[Range[1+(opa+1)j-(opa+1),(opa+1)j],{j,1,nmin}],{opa,minops,maxops}],
+Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
+\[CapitalDelta]L=deltaFree[maxops] ,sigmazLogdet=Table[{sigmaz,sigmaz},{opa,minops,maxops}],
+opsToVary=Table[Drop[Range[0,opa],{3}],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
+sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
+\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
+},
+\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
+\[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (succOffset);
+\[CapitalDelta]L[[2,1]]=4;
+nits[[1]] = firstNit;
+mcIteratorFullThing[deltaext,deltaextMaxTravel,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross]
+]
+(*
+fitExternalWrapper[100,101,123,4,5,5,200,101,3/2,11/10,10^(-3),1,3,11/10,1/5,"bblb",1/10,1/10,0,0]
+*)
+
+
+(* Fullthing Tester - External fixed*)
+(*Temps suggested value 3,4*)
+fixedExternalWrapper[prec_,nzCheck_,seed_,minops_,maxops_,nmin_,firstNit_,succNits_,firstOffset_,succOffset_,sigmaChi_,sigmaz_,temps_,idTag_,sigmazCheck_,sigmaMC_,maxReps_,dcross_]:=Block[
+{
+elems=Table[Table[Range[1+(opa+1)j-(opa+1),(opa+1)j],{j,1,nmin}],{opa,minops,maxops}],
+Nz=Table[{5,nmin(opa +1) -5},{opa,minops,maxops}],
+\[CapitalDelta]L=deltaFree[maxops] ,sigmazLogdet=Table[{sigmaz,sigmaz},{opa,minops,maxops}],
+opsToVary=Table[Range[1,opa],{opa,minops,maxops}],nits=ConstantArray[succNits,maxops-minops+1],
+sigmaChiList=Table[sigmaChi,{i,minops,maxops}],
+\[Beta]list=Table[1/((nmin/4)(2+temps/2)i),{i,minops,maxops}]
+},
+\[CapitalDelta]L[[1;;minops,1]]=\[CapitalDelta]L[[1;;minops,1]] ( firstOffset);
+\[CapitalDelta]L[[minops+1;;maxops,1]]=\[CapitalDelta]L[[minops+1;;maxops,1]] (succOffset);
+nits[[1]] = firstNit;
+mcIteratorFullThing[1,0,minops,maxops,\[CapitalDelta]L,\[Beta]list,nzCheck,prec,seed,nits,idTag,sigmazCheck,sigmaMC,maxReps,sigmaChiList,opsToVary,sigmazLogdet,Nz,elems,dcross]
+]
+(*This routine did the whole iterative mc but was deprecated once we moved to the cluster*)
+
+mcIteratorFullThing[\[CapitalDelta]\[Phi]0_,deltaExtMax_,initialOps_,finalOps_,\[CapitalDelta]Linitial_,\[Beta]_,nz_,prec_,seedO_,nits_,runid_,sigmaz_,sigmaMC_,maxReps_,sigmaChi_,opsToVary_,sigmazLogDet_,nzLogDet_,elems_,dcross_]:=
+Block[{\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]0,\[CapitalDelta]L=\[CapitalDelta]Linitial,results,repCount=0,checks,it,seed=seedO,nzeros=finalOps,dimHolder},
+it=initialOps;
+
+SetOptions[RandomReal,WorkingPrecision->100];
+results=Reap[
+While[it<=finalOps,
+dimHolder=Sow[metroReturnAvg[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],\[Beta][[it-initialOps+1]],\[CapitalDelta]L[[1;;it]],seed+it,initialOps,runid,sigmaMC,opsToVary[[it-initialOps+1]],sigmazLogDet[[it-initialOps+1]],nzLogDet[[it-initialOps+1]],elems[[it-initialOps+1]],dcross]][[1]];
+Print[dimHolder];
+\[CapitalDelta]L[[1;;it,1]]=dimHolder[[2;;-1]];
+\[CapitalDelta]\[Phi]=dimHolder[[1]];
+checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]];
+Print[checks[[2;;3]]];
+dimHolder=Sow[metroReturnAvgChi2[\[CapitalDelta]\[Phi],deltaExtMax,prec,nits[[it-initialOps+1]],nz,1,\[CapitalDelta]L[[1;;it]],seed+2it,initialOps,runid,sigmaz,sigmaChi[[it-initialOps+1]],0,opsToVary[[it-initialOps+1]]]][[1]];
+Print[dimHolder];
+\[CapitalDelta]L[[1;;it,1]]=dimHolder[[2;;-1]];
+\[CapitalDelta]\[Phi]=dimHolder[[1]];
+checks=Sow[ccheckMetroWeightedBis[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[1;;it]],prec,seed+1,nz,sigmaz]];
+Print[checks[[2;;3]]];
+
+If[(checks[[2]]==1) &&(checks[[3]]<=nzeros+1) ,
+nzeros=checks[[3]];it=it+1;repCount=0,
+If[repCount<maxReps,\[CapitalDelta]L[[1;;it,1]]=\[CapitalDelta]L[[1;;it,1]](1+Table[RandomReal[{-1/100,1/100}],{i,1,it}]);
+Print["Rejected"];seed=seed+finalOps;repCount=repCount+1,Print["Andato_a"];Break[]]];
+];
+];
+Export["averages_n_checks"<>"from"<>ToString[initialOps]<>"to"<>ToString[finalOps]<>runid<>"prec="<>ToString[prec]<>"seed="<>ToString[seed]<>"nz="<>ToString[nz]<>".txt", results];
+]
+
