@@ -73,7 +73,9 @@ deltaExtMax_ max travel for the external dimension,
 lmax_order of the highest operator to vary (redundant at this stage), 
 idTag_string for identifying runs, 
 initialOps_ This tells the routine whether to vary all operators from the begining or just let the newly added one vary on its own for a certain number of steps,
-opsToVary_array with the index of the operators to be optimized during the montecarlo. This follows the order in which they appear in \[CapitalDelta]LOriginal. 0 represents the external operator*)
+opsToVary_array with the index of the operators to be optimized during the montecarlo. This follows the order in which they appear in \[CapitalDelta]LOriginal. 0 represents the external operator
+Nprocs_ number of processors
+*)
 
 MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]0_,deltaExtMax_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_,opsToVary_,sigmaz_,Nz_,elems_,Nprocs_]:=
 Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0=ConstantArray[0,{Length[\[CapitalDelta]LOriginal],Nprocs,Nz}], QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
