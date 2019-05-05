@@ -68,7 +68,7 @@ spinAppender[\[CapitalDelta]_]:=Transpose[{\[CapitalDelta],Range[0,2Length[\[Cap
 
 (*\[CapitalDelta]\[Phi]0_ Initial external dimension, \[CapitalDelta]LOriginal_Initial spectrum, Ndit_Number of Iterations, prec_precision, betad_1/Temperature, seed_ ,sigmaMC_sigma for the MC step, dcross_regularization radius, 
 lmax_order of the highest operator to vary (redundant at this stage), idTag_string for identifying runs, initialOps_ This tells the routine whether to vary all operators from the begining or just let the newly added one vary on its own for a certain number of steps,
-opsToVary_array with the *)
+opsToVary_array with the index of the operators to be optimized during the montecarlo *)
 
 MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi]0_,deltaExtMax_,\[CapitalDelta]LOriginal_,Ndit_,prec_,betad_,seed_,sigmaMC_,dcross_,lmax_,idTag_,initialOps_,opsToVary_,sigmaz_,Nz_,elems_,Nprocs_]:=
 Block[{itd, DDldata,  sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0=ConstantArray[0,{Length[\[CapitalDelta]LOriginal],Nprocs,Nz}], QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
@@ -79,7 +79,7 @@ $MaxPrecision=prec;
 $MinPrecision=prec;
 
     SeedRandom[seed];
-  zsample = Table[Sample[Nz,sigmaz,seed+i],{i,1,Nprocs}]; 
+  zsample = Table[Sample[Nz,sigmaz,seed(i)],{i,1,Nprocs}]; 
   Print[Dimensions[zsample]];
 Idsample = qQId[\[CapitalDelta]\[Phi], zsample];
 Print[Dimensions[Idsample]];
@@ -90,7 +90,7 @@ Action = (ParallelTable[
     QQ0[[;;,idProc,;;]] = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample[[idProc]]];
     Print[Dimensions[QQ0]];
           PP[[;;,idProc,;;]]= Join[QQ0[[;;,idProc,;;]] ,{Idsample[[idProc]]}]; 
-          Log[(selectiveMinors[PP[[;;,idProc,;;]]//Transpose,#]&/@elems)^2]//Total,{idProc,1,Nprocs}] //Total)/(Nprocs*Nz);
+          Log[(selectiveMinors[PP[[;;,idProc,;;]]//Transpose,#]&/@elems)^2]//Total,{idProc,1,Nprocs}] //Total)/(Nprocs*Length[elems]);
          
 QQsave=QQ0;
 (*Brot noch schmieren? *)
