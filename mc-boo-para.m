@@ -86,6 +86,7 @@ Print[Dimensions[Idsample]];
     \[CapitalDelta]L = \[CapitalDelta]LOriginal;
   \[CapitalDelta]L[[All,1]] = SetPrecision[\[CapitalDelta]L[[All,1]],prec];
   
+  (*Calculate blocks and action for initial conditions*)
 Action = (ParallelTable[
     QQ0[[;;,idProc,;;]] = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample[[idProc]]];
     Print[Dimensions[QQ0]];
@@ -93,7 +94,8 @@ Action = (ParallelTable[
           Log[(selectiveMinors[PP[[;;,idProc,;;]]//Transpose,#]&/@elems)^2]//Total,{idProc,1,Nprocs}] //Total)/(Nprocs*Length[elems]);
          
 QQsave=QQ0;
-(*Brot noch schmieren? *)
+
+(*Smearing. Not compatible with parallel yet. *)
 If[dcross!=0,
 smearedaction=Reap[Table[
            QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
@@ -142,7 +144,6 @@ If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2
           PP[[;;,idProc,;;]]= Join[QQ0[[;;,idProc,;;]] ,{Idsample[[idProc]]}]; 
           Log[(selectiveMinors[PP[[;;,idProc,;;]]//Transpose,#]&/@elems)^2]//Total,{idProc,1,Nprocs}] //Total)/(Nprocs*Nz);   
      (*End PARALLEL*)
-(*Reevaluate coefficients*)
            
           
  
@@ -154,7 +155,7 @@ If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2
           \[CapitalDelta]L=\[CapitalDelta]LOld;QQ0=QQold;\[CapitalDelta]\[Phi]=\[CapitalDelta]\[Phi]old; nReject= nReject+1,
           Print["Error"]; Break[]];
 
-	  (*minchecker*)
+	  (*This routine saves the minimum configuration*)
           If[Actionnew<actMin, 
           actMin = Actionnew; \[CapitalDelta]Lmin= \[CapitalDelta]L; \[CapitalDelta]\[Phi]min = \[CapitalDelta]\[Phi]];
 	  
@@ -273,6 +274,8 @@ Return[{rhovec, Sqrt[s/nu]}]
 ];
 ]
 
+(*This is the wrapper for MetroGoFixedSelectiveDir. It used to have more sense beacuse it calculated the average over the last 100 steps and did the plots in one go,
+	but since we're no longer averaging and the plots are done by logdetPlotnAv (see below), we might deprecate it soon.*)
 metroReturnAvg[\[CapitalDelta]\[Phi]_,deltaExtMax_,prec_,nit_,\[Beta]_,\[CapitalDelta]L_,seed_,initialOps_,idtag_,sigmaMC_,opsToVary_,sigmaz_,nz_,elems_,dcross_,nProcs_]:=Block[{data,exact=Join[{1},deltaFree[Length[\[CapitalDelta]L]][[;;,1]]]},
 MetroGoFixedSelectiveDir[\[CapitalDelta]\[Phi],deltaExtMax,\[CapitalDelta]L,nit,prec,\[Beta],seed,sigmaMC,dcross,Length[\[CapitalDelta]L],ToString[Length[\[CapitalDelta]L]]<>idtag,initialOps,opsToVary,sigmaz,nz,elems,nProcs];
 data= Get["Res-fixed_Param_Nit="<>ToString[nit]<>"deltaphi0="<>ToString[N[\[CapitalDelta]\[Phi],3]]<>"Nz="<>ToString[nz]<>"sigmaz="<>ToString[N[sigmaz,3]]<>"prec="<>ToString[prec]<>"beta="<>ToString[N[\[Beta],3]]<>"sigmaMC="<>ToString[N[sigmaMC,3]]<>"dcross="<>ToString[N[dcross,3]]<>"seed="<>ToString[seed]<>"id="<>ToString[Length[\[CapitalDelta]L]]<>idtag<>".txt"];
@@ -293,6 +296,8 @@ Return[{data[[-1,2]],data[[-1,3]]}];
 
 
 (*Plotters*)
+(*When called with only the filename of the result of MetroGoFixedSelectiveDir, it assumes that only one operator per spin was present. Otherwise, one must 
+	pass the exact reference spectrum as the second argument.*)
 logdetPlotnAv[filename_]:=Block[{data,exact,numDims,dimHolder,\[CapitalDelta]\[Phi],\[CapitalDelta]L},
 data= Get[filename];
 numDims=Length[data[[1,2]]];
@@ -347,6 +352,7 @@ Export[filename<>"zoomed-error"<>".pdf",ListPlot[Table[(data[[All,2]][[All,i]]-e
 Return[{data[[-1,2]],data[[-1,3]]}];
 ];
 
+(*Checks the validity of the spectrum by demanding unitarity and crossing symmetry. Fits OPEs with cWLS*)
 ccheckMetroWeightedBis[\[CapitalDelta]\[Phi]_,\[CapitalDelta]LOriginal_,prec_,seed_,Nz_,sigmaz_]:=Block[{itd, DDldata, sigmaD, Action=100000000, Actionnew=0, Action0, DDldatafixed, QQ0, QQ1, str, Lmax, Nvmax, rr, metcheck, sigmaDini, 
     zsample, Idsample, PP0, PP1, lr, nr, Errvect, Factor, Factor0, ppm, DDldataEx, PPEx, QQEx, Idsampleold, ip, nvmax, QQFold,  
     \[CapitalDelta]LOld,dimToVary,PP,QQsave,\[CapitalDelta]L=\[CapitalDelta]LOriginal,dw,smearedaction,\[Rho],rhovec,eqs,rhosol,last,check,results,indices,rhopos,meanrho,sigmarho,finalcheck,errSample,res,nzeros}, 
@@ -467,7 +473,7 @@ Print[Dimensions[Idsample]];
           Actionnew = Log[(selectiveMinors[PP//Transpose,#]&/@elems)^2]//Total; 
          
 QQsave=QQ0;
-(*Brot noch schmieren? *)
+(*Smearing *)
 If[dcross!=0,
 smearedaction=Reap[Table[
            QQ0[[dimToVary]] =qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]]+dcross,\[CapitalDelta]L[[dimToVary]][[2]],zsample];  PP = Join[QQ0, {Idsample}]; 
