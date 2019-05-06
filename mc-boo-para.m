@@ -98,7 +98,7 @@ Action = (ParallelTable[
     QQ0[[;;,idProc,;;]] = qQGenDims[\[CapitalDelta]\[Phi],\[CapitalDelta]L,zsample[[idProc]]];
     Print[Dimensions[QQ0]];
           PP[[;;,idProc,;;]]= Join[QQ0[[;;,idProc,;;]] ,{Idsample[[idProc]]}]; 
-          Log[(selectiveMinors[PP[[;;,idProc,;;]]//Transpose,#]&/@elems)^2]//Total,{idProc,1,Nprocs}] //Total)/(Nprocs*Length[elems]);
+          Log[(selectiveMinors[PP[[;;,idProc,;;]]//Transpose,#]&/@elems)^2]//Total,{idProc,1,Nprocs}] //Total)/(Nprocs*Dimensions[elems][[2]]);
          
 QQsave=QQ0;
 
@@ -149,7 +149,7 @@ If[\[CapitalDelta]L[[1,1]]<1,\[CapitalDelta]L[[1,1]]=\[CapitalDelta]L[[1,1]]+1/2
           QQ0[[dimToVary,idProc,;;]] = qQGen[\[CapitalDelta]\[Phi],\[CapitalDelta]L[[dimToVary]][[1]],\[CapitalDelta]L[[dimToVary]][[2]],zsample[[idProc]]];
           ];
           PP[[;;,idProc,;;]]= Join[QQ0[[;;,idProc,;;]] ,{Idsample[[idProc]]}]; 
-          Log[(selectiveMinors[PP[[;;,idProc,;;]]//Transpose,#]&/@elems)^2]//Total,{idProc,1,Nprocs}] //Total)/(Nprocs*Nz);   
+          Log[(selectiveMinors[PP[[;;,idProc,;;]]//Transpose,#]&/@elems)^2]//Total,{idProc,1,Nprocs}] //Total)/(Nprocs*Dimensions[elems][[2]]);   
      (*End PARALLEL*)
            
           
